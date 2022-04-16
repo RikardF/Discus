@@ -1,5 +1,7 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
-
+:root {
+    --sidebarColor: #6495ed;
+}
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }

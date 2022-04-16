@@ -1,39 +1,116 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">ExArbete</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+﻿@using ExArbete.Data
+@using Google.Cloud.Firestore
+@inject FirestoreDb firestoreDb
+@inject IJSRuntime JS
+@inject NavigationManager MyNavigationManager
+
+<div id="sidebar" class="flex-column">
+<div class="active-nav @NavMenuCssClass" style="margin-top: @activeNavDistanceFromTop"></div>
+
+    <div class="sidebar @NavMenuCssClass">
+        
+        <div class="top-row @NavMenuCssClass ps-3 navbar navbar-dark">
+
+            <a class="navbar-brand" href="">ExArbete</a>
+            <span class="navbar-toggler-icon oi" @onclick="ToggleNavMenu"></span>
+
+
+
+        </div>
+        <nav class="flex-column">
+
+            <div id="home" class="nav-item">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All" onclick='@(async () => await GetDistanceFromTop("home"))'>
+                    <span class="oi bi-house-door" aria-hidden="true"></span>
+                    <p class="menu-text">Home</p>
+
+                </NavLink>
+                
+
+            </div>
+
+
+            <div id="counter" class="nav-item">
+                <NavLink class="nav-link" href="counter" onclick='@(async () => await GetDistanceFromTop("counter"))'>
+                    <span class="oi oi-plus" aria-hidden="true"></span>
+                    <p class="menu-text">Counter</p>
+                </NavLink>
+            </div>
+            <div id="fetchdata" class="nav-item">
+                <NavLink class="nav-link" href="fetchdata" onclick='@(async () => await GetDistanceFromTop("fetchdata"))'>
+                    <i class="oi oi-list-rich" aria-hidden="true"></i>
+                    <p class="menu-text">Fetch dataaaaaa</p>
+
+                </NavLink>
+            </div>
+            @foreach (Category category in categories)
+            {
+                <div id="@category.Name" class="nav-item">
+                    <NavLink class="nav-link" href="counter" onclick="@(async () => await GetDistanceFromTop(@category.Name))">
+                        <i class="@category.Icon colored oi"></i>
+                        <p class="menu-text">@category.Name</p>
+                    </NavLink>
+                </div>
+            }
+            @if (isLoading)
+            {
+                <div class="center-horizontal">
+                    <div class="spinner-border text-light"></div>
+                </div>
+
+            }
+        </nav>
     </div>
 </div>
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
-            </NavLink>
-        </div>
-    </nav>
-</div>
+
+
+
 
 @code {
     private bool collapseNavMenu = true;
-
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private bool isLoading = true;
+    private List<Category> categories = new();
+    private string? activeNavDistanceFromTop;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            categories = await GetCategories();
+            Uri uri = new Uri(MyNavigationManager.Uri);
+            if(uri.AbsolutePath == "/") {
+                await GetDistanceFromTop("home");
+            } else {
+                await GetDistanceFromTop(uri.AbsolutePath.Trim('/'));
+            }
+            isLoading = false;
+        }
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task GetDistanceFromTop(string? id) {
+        int distanceFromTop = await JS.InvokeAsync<int>("getDistanceFromTop", id);
+        Uri uri = new Uri(MyNavigationManager.Uri);
+        if(uri.AbsolutePath == "/") {
+            activeNavDistanceFromTop = distanceFromTop + 56  + "px";
+        } else {
+           activeNavDistanceFromTop = distanceFromTop  + "px"; 
+        }
+        
+        await InvokeAsync(() => StateHasChanged());
+    }
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    private async Task<List<Category>> GetCategories()
+    {
+        CollectionReference collection = firestoreDb.Collection("categories");
+        QuerySnapshot snapshot = await firestoreDb.Collection("categories").GetSnapshotAsync();
+        return snapshot.Documents.Select(d => d.ConvertTo<Category>()).ToList<Category>();
     }
 }
