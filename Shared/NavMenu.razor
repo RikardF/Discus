@@ -3,6 +3,7 @@
 @inject FirestoreDb firestoreDb
 @inject IJSRuntime JS
 @inject NavigationManager MyNavigationManager
+@using ExArbete.Shared.Components
 
 <div id="sidebar" class="flex-column">
 <div class="active-nav @NavMenuCssClass" style="margin-top: @activeNavDistanceFromTop"></div>
@@ -21,7 +22,9 @@
 
             <div id="home" class="nav-item">
                 <NavLink class="nav-link" href="" Match="NavLinkMatch.All" onclick='@(async () => await GetDistanceFromTop("home"))'>
-                    <span class="oi bi-house-door" aria-hidden="true"></span>
+                    <span class="oi bi-house-door" aria-hidden="true">
+                        <Badge BadgeNumber="2" />
+                    </span>
                     <p class="menu-text">Home</p>
 
                 </NavLink>

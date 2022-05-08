@@ -1,0 +1,11 @@
+@namespace ExArbete.Shared.Components
+
+<div class="badge-alert">
+    <p class="badge-text">@BadgeNumber</p>
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public int BadgeNumber { get; set; }
+}

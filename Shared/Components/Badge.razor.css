@@ -1,0 +1,22 @@
+.badge-alert {
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    padding-top: 1px;
+    position: absolute;
+    background-color: red;
+    width: 1.2rem;
+    height: 1.2rem;
+    border-radius: 1rem;
+    border: 1px solid var(--toprowColor);
+    top: -0.4rem;
+    right: -0.4rem;
+}
+
+.badge-text {
+    padding: 0;
+    margin: 0;
+    font-size: 12px;
+    font-style: normal;
+    color: white;
+}

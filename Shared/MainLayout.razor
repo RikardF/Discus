@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@inject IJSRuntime JS
+@using ExArbete.Shared.Components
 
 <PageTitle>ExArbete</PageTitle>
 
@@ -7,11 +9,41 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+            
+            <div class="user-menu">
+                <span class="bi bi-person-circle user-icon" @onclick=ToggleMenu>
+                </span>
+                <div id="dropdown" class="dropdown-menu @CssCollapse">
+                    <ul class="user-menu-list">
+                        <li>hem</li>
+                        <li>logut</li>
+                        <li>hej</li>
+                    </ul>
+                </div>
+            </div>
+            
+            
         </div>
 
-        <article class="content px-4">
-            @Body
+        <article class="content px-4" @onclick='async (eventargs) => await HandleClick(eventargs)'>
+              @Body  
         </article>
     </main>
 </div>
+
+@code {
+    private bool collapseMenu = true;
+    private string? CssCollapse => collapseMenu ? "collapse" : null;
+
+    private void ToggleMenu() {
+        
+        collapseMenu = !collapseMenu;
+    }
+
+    private async Task HandleClick(MouseEventArgs eventArgs) {
+        bool outsideDropdownMenu = await JS.InvokeAsync<bool>("handleDropdownMenu", eventArgs.PageX, eventArgs.PageY);
+            if(!collapseMenu && outsideDropdownMenu) {
+                collapseMenu = outsideDropdownMenu;
+            }
+    }
+}
