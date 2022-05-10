@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using ExArbete.Data;
 using Google.Cloud.Firestore;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 string firestoreProject = builder.Configuration.GetValue<string>("FirestoreProject");
@@ -17,7 +18,11 @@ Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", firestoreAu
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
+builder.Services.AddAuthentication().AddGoogle(googleOptions =>
+    {
+        googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+        googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    });
 builder.Services.AddTransient<FirestoreDb>((_) => FirestoreDb.Create(firestoreProject));
 
 var app = builder.Build();
@@ -35,6 +40,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");

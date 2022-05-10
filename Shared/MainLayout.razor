@@ -1,11 +1,14 @@
 ﻿@inherits LayoutComponentBase
 @inject IJSRuntime JS
-@using ExArbete.Shared.Components
+@using Google.Cloud.Firestore
+@inject FirestoreDb firestoreDb
+@using ExArbete.Data
 
 <PageTitle>ExArbete</PageTitle>
 
 <div class="page">
-        <NavMenu />
+    <CascadingValue Value="@categoryList">
+        <NavMenu/>
 
     <main>
         <div class="top-row px-4">
@@ -26,14 +29,28 @@
         </div>
 
         <article class="content px-4" @onclick='async (eventargs) => await HandleClick(eventargs)'>
+            
               @Body  
+            
         </article>
     </main>
+    </CascadingValue>
 </div>
 
 @code {
+    private List<Category> categoryList = new();
     private bool collapseMenu = true;
     private string? CssCollapse => collapseMenu ? "collapse" : null;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            categoryList = await GetCategories();
+            categoryList.OrderBy(d => d.Name);
+            await InvokeAsync(() => StateHasChanged());
+        }
+    }
 
     private void ToggleMenu() {
         
@@ -45,5 +62,13 @@
             if(!collapseMenu && outsideDropdownMenu) {
                 collapseMenu = outsideDropdownMenu;
             }
+    }
+
+    private async Task<List<Category>> GetCategories()
+    {
+        CollectionReference collection = firestoreDb.Collection("categories");
+        Query orderByName = collection.OrderBy("Name");
+        QuerySnapshot snapshot = await orderByName.GetSnapshotAsync();
+        return snapshot.Documents.Select(d => d.ConvertTo<Category>()).ToList<Category>();
     }
 }

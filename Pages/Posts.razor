@@ -1,0 +1,68 @@
+@page "/posts/{categoryId}"
+@using ExArbete.Shared.Components
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>@categoryList?.Find(c => c.Id == CategoryId)?.Name</PageTitle>
+
+@using ExArbete.Data
+@using Google.Cloud.Firestore
+@inject FirestoreDb firestoreDb
+
+<h1>@categoryList?.Find(c => c.Id == CategoryId)?.Name</h1>
+
+<p>This component demonstrates fetching data from a service.</p>
+
+@foreach (Post post in postList.FindAll(p => p.CategoryId == CategoryId).OrderByDescending(p => p.CreatedAt))
+{
+    <PostCard PostData=@post></PostCard>
+}
+
+@code {
+    [Parameter]
+    public string? CategoryId { get; set; }
+    [CascadingParameter]
+    protected List<Category>? categoryList { get; set; }
+    private FirestoreChangeListener? firestoreChangeListener;
+    private List<Post> postList = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender){
+            firestoreChangeListener = firestoreDb.Collection("posts")
+                        @* .WhereEqualTo("category_id", CategoryId)
+                        .OrderByDescending("created_at") *@
+                        .Listen(async (snapshot) =>
+                        {
+                            postList.Clear();
+                            postList.AddRange(snapshot.Documents.Select(d => d.ConvertTo<Post>()));
+                            await InvokeAsync(() => StateHasChanged());
+                        });
+        }
+        
+        //postList = await GetPosts();
+        //await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task<List<Post>> GetPosts()
+    {
+        CollectionReference collection = firestoreDb.Collection("posts");
+        Query byCategory = collection.WhereEqualTo("category_id", CategoryId).OrderByDescending("created_at");
+        QuerySnapshot snapshot = await byCategory.GetSnapshotAsync();
+        return snapshot.Documents.Select(d => d.ConvertTo<Post>()).ToList<Post>();
+    }
+
+    private async Task SubmitPost() {
+        CollectionReference collection = firestoreDb.Collection("posts");
+        Post post = new Post {
+            Title = "Detta är en titel",
+            Content = "Detta är content",
+            CategoryId = "T160YqqlyYk5Ux2F3HsX",
+            Likes = new List<string>(),
+            SubPosts = new List<Post>(),
+            CreatedAt = Timestamp.GetCurrentTimestamp()
+        };
+        DocumentReference doc = await collection.AddAsync(post);
+    }
+
+}

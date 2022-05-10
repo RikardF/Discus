@@ -6,11 +6,11 @@
 @using ExArbete.Shared.Components
 
 <div id="sidebar" class="flex-column">
-<div class="active-nav @NavMenuCssClass" style="margin-top: @activeNavDistanceFromTop"></div>
+<div class="active-nav @CollapseCssClass" style="margin-top: @activeNavDistanceFromTop"></div>
 
-    <div class="sidebar @NavMenuCssClass">
+    <div class="sidebar @CollapseCssClass">
         
-        <div class="top-row @NavMenuCssClass ps-3 navbar navbar-dark">
+        <div class="top-row @CollapseCssClass ps-3 navbar navbar-dark">
 
             <a class="navbar-brand" href="">ExArbete</a>
             <span class="navbar-toggler-icon oi" @onclick="ToggleNavMenu"></span>
@@ -46,10 +46,10 @@
 
                 </NavLink>
             </div>
-            @foreach (Category category in categories)
+            @foreach (Category category in categoryList ?? new List<Category>())
             {
-                <div id="@category.Name" class="nav-item">
-                    <NavLink class="nav-link" href="counter" onclick="@(async () => await GetDistanceFromTop(@category.Name))">
+                <div id='@("posts/" + category.Id)' class="nav-item">
+                    <NavLink class="nav-link" href='@("posts/" + category.Id)' onclick='@(async () => await GetDistanceFromTop("posts/" + @category.Id))'>
                         <i class="@category.Icon colored oi"></i>
                         <p class="menu-text">@category.Name</p>
                     </NavLink>
@@ -71,26 +71,32 @@
 
 
 @code {
+    [CascadingParameter]
+    protected List<Category>? categoryList { get; set; }
     private bool collapseNavMenu = true;
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private string? CollapseCssClass => collapseNavMenu ? "collapse" : null;
     private bool isLoading = true;
-    private List<Category> categories = new();
     private string? activeNavDistanceFromTop;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            categories = await GetCategories();
-            Uri uri = new Uri(MyNavigationManager.Uri);
-            if(uri.AbsolutePath == "/") {
-                await GetDistanceFromTop("home");
-            } else {
-                await GetDistanceFromTop(uri.AbsolutePath.Trim('/'));
-            }
+            await Task.Delay(500);
+            await RenderSelectionBulb();
             isLoading = false;
         }
         await InvokeAsync(() => StateHasChanged());
+    }
+
+    public async Task RenderSelectionBulb() {
+        Uri uri = new Uri(MyNavigationManager.Uri);
+            if(uri.AbsolutePath == "/") {
+                await GetDistanceFromTop("home");
+            } else {
+                   await GetDistanceFromTop(uri.AbsolutePath.Trim('/')); 
+                
+            }
     }
 
     private async Task GetDistanceFromTop(string? id) {
@@ -110,10 +116,5 @@
         collapseNavMenu = !collapseNavMenu;
     }
 
-    private async Task<List<Category>> GetCategories()
-    {
-        CollectionReference collection = firestoreDb.Collection("categories");
-        QuerySnapshot snapshot = await firestoreDb.Collection("categories").GetSnapshotAsync();
-        return snapshot.Documents.Select(d => d.ConvertTo<Category>()).ToList<Category>();
-    }
+    
 }

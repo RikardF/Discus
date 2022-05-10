@@ -2,6 +2,7 @@
 :root {
     --sidebarColor: #6495ed;
     --toprowColor: #f7f7f7;
+    --postCardColor: #a89191;
 }
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;

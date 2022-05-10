@@ -1,0 +1,63 @@
+.post-container {
+    flex: 1;
+    background-color: var(--postCardColor);
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+}
+
+.post-title {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.user-card {
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+margin-bottom: 1rem;
+}
+
+.detail-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-start;
+}
+
+.detail-text {
+    font-size: 11px;
+    margin-bottom: 0;
+}
+
+.arrow-size {
+    font-size: 20px;
+}
+
+.expandable {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.user-icon {
+    font-size: 30px;
+}
+
+.content-text {
+    flex: 1;
+    font-size: 16px;
+    padding-left: 1rem;
+    align-self: center;
+}
+
+.reply-field {
+    width: 50%;
+    display: block;
+    resize: vertical;
+    overflow: hidden;
+    min-height: fit-content;
+}

@@ -10,7 +10,8 @@ namespace ExArbete.Data
         [FirestoreProperty]
         public string? Username { get; set; }
         [FirestoreProperty("created_at")]
-        [FirestoreDocumentCreateTimestamp]
-        public DateTime CreatedAt { get; set; }
+        public Timestamp CreatedAt { get; set; }
+        [FirestoreProperty("last_visit")]
+        public Timestamp LastVisit { get; set; }
     }
 }

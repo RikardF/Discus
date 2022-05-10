@@ -1,0 +1,43 @@
+@namespace ExArbete.Shared.Components
+@using ExArbete.Data
+
+<div class="post-container">
+    <div class="post-title" @onclick="ExpandPost">
+        <div class="user-card">
+            <span class="bi bi-person-circle user-icon"></span>
+            <p class="detail-text">Användarnamn</p>
+        </div>
+        <p class="title-text">@PostData?.Title</p>
+        <div class="detail-card">
+            <p class="detail-text">@PostData?.CreatedAt.ToDateTime().ToShortDateString() @PostData?.CreatedAt.ToDateTime().ToShortTimeString()</p>
+            <div class="expandable">
+               <p class="detail-text">@PostData?.SubPosts?.Count replies</p> 
+               <i class="bi @ArrowCss arrow-size"></i>
+            </div>
+            
+        </div>
+        
+    </div>
+    
+    @if(expanded) {
+        <p class="content-text">@PostData?.Content</p>
+        if(PostData?.SubPosts != null) {
+            foreach (Post subPost in PostData.SubPosts)
+        {
+            <ReplyCard PostData="@subPost"></ReplyCard>
+        }
+        }
+        <textarea class="form-control reply-field" rows="2"></textarea>
+    }
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ExArbete.Data.Post? PostData { get; set; }
+    private bool expanded = false;
+    private string ArrowCss => expanded ? "bi-caret-down" : "bi-caret-up";
+    private void ExpandPost(){
+        expanded = !expanded;
+    }
+}

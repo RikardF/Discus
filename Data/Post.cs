@@ -12,8 +12,7 @@ namespace ExArbete.Data
         [FirestoreProperty]
         public string? Content { get; set; }
         [FirestoreProperty("created_at")]
-        [FirestoreDocumentCreateTimestamp]
-        public DateTime CreatedAt { get; set; }
+        public Timestamp CreatedAt { get; set; }
         [FirestoreProperty("created_by")]
         public string? CreatedBy { get; set; }
         [FirestoreProperty]
@@ -22,5 +21,6 @@ namespace ExArbete.Data
         public List<Post>? SubPosts { get; set; }
         [FirestoreProperty]
         public string? Title { get; set; }
+        public Post(){}
     }
 }
