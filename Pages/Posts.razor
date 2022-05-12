@@ -1,22 +1,37 @@
 @page "/posts/{categoryId}"
 @using ExArbete.Shared.Components
+@using ExArbete.Interfaces
 @using Microsoft.AspNetCore.Authorization
-@attribute [Authorize]
+@inject IHttpContextAccessor httpContextAccessor
+@inject IUserService userService
 
 <PageTitle>@categoryList?.Find(c => c.Id == CategoryId)?.Name</PageTitle>
 
-@using ExArbete.Data
+@using ExArbete.Models
 @using Google.Cloud.Firestore
 @inject FirestoreDb firestoreDb
 
 <h1>@categoryList?.Find(c => c.Id == CategoryId)?.Name</h1>
 
-<p>This component demonstrates fetching data from a service.</p>
-
-@foreach (Post post in postList.FindAll(p => p.CategoryId == CategoryId).OrderByDescending(p => p.CreatedAt))
-{
+<AuthorizeView>
+    <Authorized>
+        @if(userService.IsNewUser)
+        {
+            <p>You need to complete your registration before entering this section.</p>
+        } else {
+            @foreach (Post post in postList.FindAll(p => p.CategoryId == CategoryId).OrderByDescending(p => p.CreatedAt))
+            {
     <PostCard PostData=@post></PostCard>
 }
+        }
+        
+
+    </Authorized>
+    <NotAuthorized>
+        <p>You need to <NavLink href="/Identity/Account/Login">sign in</NavLink> to view this page</p>
+    </NotAuthorized>
+</AuthorizeView>
+
 
 @code {
     [Parameter]

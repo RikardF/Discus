@@ -1,5 +1,5 @@
 @namespace ExArbete.Shared.Components
-@using ExArbete.Data
+@using ExArbete.Models
 
 <div class="post-container">
     <div class="post-title" @onclick="ExpandPost">
@@ -34,7 +34,7 @@
 @code {
     [Parameter]
     [EditorRequired]
-    public ExArbete.Data.Post? PostData { get; set; }
+    public Post? PostData { get; set; }
     private bool expanded = false;
     private string ArrowCss => expanded ? "bi-caret-down" : "bi-caret-up";
     private void ExpandPost(){

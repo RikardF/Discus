@@ -3,8 +3,19 @@ using Microsoft.AspNetCore.Components.Web;
 using ExArbete.Data;
 using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using ExArbete.Areas.Identity.Data;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
+using ExArbete.Services;
+using ExArbete.Interfaces;
+using ExArbete.Models;
 
+IUserService userService = new UserService();
+userService.User = new();
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("ExArbeteIdentityDbContextConnection");
 string firestoreProject = builder.Configuration.GetValue<string>("FirestoreProject");
 string firestoreAuthFile = builder.Configuration.GetValue<string>("FirebaseAuthFile");
 
@@ -20,10 +31,31 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddAuthentication().AddGoogle(googleOptions =>
     {
-        googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-        googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+        //googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+        //googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+        googleOptions.ClientId = "229437423853-8l20s99tb07qlfm4ls16nmqb41r4rvuf.apps.googleusercontent.com";
+        googleOptions.ClientSecret = "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";
+        //googleOptions.ClaimActions.MapAll();
+        //googleOptions.ClaimActions.MapJsonKey("urn:google:picture", "picture", "url");
+        //googleOptions.ClaimActions.MapJsonKey("urn:google:name", "name", "name");
+        googleOptions.Events.OnCreatingTicket = (context) =>
+                {
+                    string? picture = context.User.GetProperty("picture").GetString();
+                    string? name = context.User.GetProperty("name").GetString();
+                    string? email = context.User.GetProperty("email").GetString();
+                    userService.User.GoogleImage = picture;
+                    userService.User.GoogleName = name;
+                    userService.User.Email = email;
+                    return Task.CompletedTask;
+                };
+
     });
 builder.Services.AddTransient<FirestoreDb>((_) => FirestoreDb.Create(firestoreProject));
+builder.Services.AddDbContext<ExArbeteIdentityDbContext>(options =>
+    options.UseSqlServer(connectionString)); 
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<ExArbeteIdentityDbContext>();
+builder.Services.AddSingleton<IUserService>(userService);
 
 var app = builder.Build();
 

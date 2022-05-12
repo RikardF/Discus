@@ -1,6 +1,6 @@
 using Google.Cloud.Firestore;
 
-namespace ExArbete.Data
+namespace ExArbete.Models
 {
     [FirestoreData]
     public class Category
