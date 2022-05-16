@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Authentication;
 
 namespace ExArbete.Areas.Identity.Pages.Account
 {
@@ -165,38 +164,6 @@ namespace ExArbete.Areas.Identity.Pages.Account
                     {
                         _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
 
-
-
-                // If they exist, add claims to the user for:
-                //    Given (first) name
-                //    Locale
-                //    Picture
-                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.GivenName))
-                {
-                    await _userManager.AddClaimAsync(user,
-                        info.Principal.FindFirst(ClaimTypes.GivenName));
-                }
-
-                if (info.Principal.HasClaim(c => c.Type == "urn:google:locale"))
-                {
-                    await _userManager.AddClaimAsync(user,
-                        info.Principal.FindFirst("urn:google:locale"));
-                }
-
-                if (info.Principal.HasClaim(c => c.Type == "urn:google:picture"))
-                {
-                    await _userManager.AddClaimAsync(user,
-                        info.Principal.FindFirst("urn:google:picture"));
-                }
-
-                // Include the access token in the properties
-                // using Microsoft.AspNetCore.Authentication;
-                var props = new AuthenticationProperties();
-                props.StoreTokens(info.AuthenticationTokens);
-                props.IsPersistent = true;
-
-
-
                         var userId = await _userManager.GetUserIdAsync(user);
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -210,10 +177,10 @@ namespace ExArbete.Areas.Identity.Pages.Account
                             $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
                         // If account confirmation is required, we need to show the link if we don't have a real email sender
-                        if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                        {
-                            return RedirectToPage("./RegisterConfirmation", new { Email = Input.Email });
-                        }
+                        // if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                        // {
+                        //     return RedirectToPage("./RegisterConfirmation", new { Email = Input.Email });
+                        // }
 
                         await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
                         return LocalRedirect(returnUrl);
