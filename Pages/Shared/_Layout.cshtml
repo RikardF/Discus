@@ -2,12 +2,12 @@
 @using Microsoft.AspNetCore.Mvc.ViewEngines
 @inject IWebHostEnvironment Environment
 @inject ICompositeViewEngine Engine
-<!DOCTYPE html>
+@* <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ExArbete</title>
+    <title>@ViewData["Title"] - ExArbete</title> *@
 
     <environment include="Development">
         <link rel="stylesheet" href="~/Identity/lib/bootstrap/dist/css/bootstrap.css" />
@@ -20,7 +20,7 @@
               asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
         <link rel="stylesheet" href="~/Identity/css/site.css" asp-append-version="true" />
     </environment>
-</head>
+@* </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
@@ -47,7 +47,7 @@
                 </div>
             </div>
         </nav>
-    </header>
+    </header> *@
 
     <div class="container">
         <partial name="_CookieConsentPartial" optional />
@@ -55,7 +55,7 @@
             @RenderBody()
         </main>
     </div>
-    <footer class="footer border-top pl-3 text-muted">
+    @* <footer class="footer border-top pl-3 text-muted">
         <div class="container">
         &copy; 2022 - ExArbete
             @{
@@ -66,7 +66,7 @@
                 <a asp-area="" asp-page="/Privacy">Privacy</a>
             }
         </div>
-    </footer>
+    </footer> *@
 
     <environment include="Development">
         <script src="~/Identity/lib/jquery/dist/jquery.js"></script>
@@ -90,5 +90,5 @@
     </environment>
 
     @await RenderSectionAsync("Scripts", required: false)
-</body>
-</html>
+@* </body>
+</html> *@

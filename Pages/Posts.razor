@@ -4,13 +4,15 @@
 @using Microsoft.AspNetCore.Authorization
 @inject IHttpContextAccessor httpContextAccessor
 @inject IUserService userService
+@inject IPostService postService
+@inject AuthenticationStateProvider authProvider
+
 
 <PageTitle>@categoryList?.Find(c => c.Id == CategoryId)?.Name</PageTitle>
 
 @using ExArbete.Models
 @using Google.Cloud.Firestore
 @inject FirestoreDb firestoreDb
-
 <h1>@categoryList?.Find(c => c.Id == CategoryId)?.Name</h1>
 
 <AuthorizeView>
@@ -19,7 +21,23 @@
         {
             <p>You need to complete your registration before entering this section.</p>
         } else {
-            @foreach (Post post in postList.FindAll(p => p.CategoryId == CategoryId).OrderByDescending(p => p.CreatedAt))
+            <div>
+                <EditForm Context="NewPostContext" class="form-column" EditContext=@editContext OnValidSubmit=@SubmitPost>
+                    <DataAnnotationsValidator />
+                    
+                    <InputOnChange @bind-Value="newPost.Title" class="form-control mb-2"
+                    placeholder="Title"></InputOnChange>
+                    <div class="form-row">
+                        <InputAreaOnChange rows="4" @bind-Value="newPost.Content" class="form-control"
+                    placeholder="New post"></InputAreaOnChange>
+                    <button type="submit"
+                    class="btn btn-secondary btn-sm submit-button">Submit</button>
+                    </div>
+                    <ValidationSummary />
+                </EditForm>
+
+            </div>
+            @foreach (Post post in postService.PostList.FindAll(p => p.CategoryId == CategoryId).OrderByDescending(p => p.CreatedAt))
             {
     <PostCard PostData=@post></PostCard>
 }
@@ -32,33 +50,40 @@
     </NotAuthorized>
 </AuthorizeView>
 
-
 @code {
     [Parameter]
     public string? CategoryId { get; set; }
     [CascadingParameter]
     protected List<Category>? categoryList { get; set; }
+    private Post newPost = new();
+    private EditContext? editContext;
     private FirestoreChangeListener? firestoreChangeListener;
-    private List<Post> postList = new();
-
+    
+    protected override void OnInitialized()
+    {
+        editContext = new(newPost);
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if(firstRender){
             firestoreChangeListener = firestoreDb.Collection("posts")
-                        @* .WhereEqualTo("category_id", CategoryId)
-                        .OrderByDescending("created_at") *@
                         .Listen(async (snapshot) =>
                         {
-                            postList.Clear();
-                            postList.AddRange(snapshot.Documents.Select(d => d.ConvertTo<Post>()));
+                            postService.PostList.Clear();
+                            postService.PostList.AddRange(snapshot.Documents.Select(d => d.ConvertTo<Post>()));
                             await InvokeAsync(() => StateHasChanged());
                         });
         }
-        
-        //postList = await GetPosts();
-        //await InvokeAsync(() => StateHasChanged());
     }
-
+        private async Task SubmitPost()
+    {
+        newPost.CategoryId = CategoryId;
+        newPost.CreatedAt = Timestamp.GetCurrentTimestamp();
+        newPost.CreatedBy = userService.User?.Id;
+        newPost.SubPosts = new();
+        await postService.PublishPost(null, newPost, firestoreDb);
+        newPost = new();
+    }
     private async Task<List<Post>> GetPosts()
     {
         CollectionReference collection = firestoreDb.Collection("posts");
@@ -67,7 +92,7 @@
         return snapshot.Documents.Select(d => d.ConvertTo<Post>()).ToList<Post>();
     }
 
-    private async Task SubmitPost() {
+    @* private async Task SubmitPost() {
         CollectionReference collection = firestoreDb.Collection("posts");
         Post post = new Post {
             Title = "Detta är en titel",
@@ -78,6 +103,6 @@
             CreatedAt = Timestamp.GetCurrentTimestamp()
         };
         DocumentReference doc = await collection.AddAsync(post);
-    }
+    } *@
 
 }

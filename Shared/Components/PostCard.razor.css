@@ -10,7 +10,6 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    cursor: pointer;
 }
 
 .user-card {
@@ -37,14 +36,34 @@ margin-bottom: 1rem;
     font-size: 16px;
 }
 
+.content-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
 .arrow-size {
     font-size: 20px;
+    cursor: pointer;
 }
 
 .expandable {
     display: flex;
     flex-direction: row;
     align-items: center;
+}
+
+.expanded-card {
+    background-color: var(--replyCardColor);
+    border-radius: 5px;
+    padding: 1rem;
+    max-height: 100%;
+    transition: all 1s ease-in-out;
+}
+
+.expanded-card.collapse {
+    height: 0;
+    transition: all 1s ease-in-out;
 }
 
 .user-icon {
@@ -56,12 +75,19 @@ margin-bottom: 1rem;
     font-size: 18px;
     padding-left: 1rem;
     align-self: center;
+    cursor: pointer;
 }
 
 .reply-field {
-    width: 50%;
     display: block;
     resize: vertical;
     overflow: hidden;
     min-height: fit-content;
+}
+
+.profile-image {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid rgba(73, 73, 73, 0.541);
 }

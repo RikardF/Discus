@@ -17,13 +17,13 @@
             <p>This seems to be the first time you are joining us.</p>
             <p>Before you proceed you need to select a username that will be visible for other users here on this page.</p>
             <div>
-                <EditForm Context="newUserName" Model=@userService.User OnSubmit=@OnUsernameSubmit>
-                    <input class="form-control" @bind-value="userService.User.Username" type="text" placeholder="Default input">
-                    <button type="submit" class="btn btn-secondary btn-sm">Submit</button>
+                <EditForm class="form-row" Context="newUserName" Model=@userService.User OnSubmit=@OnUsernameSubmit>
+                    <input class="form-control input-field" @bind-value="userService.User.Username" type="text" placeholder="Enter a username">
+                    <button type="submit" class="btn btn-secondary btn-sm submit-button">Submit</button>
                 </EditForm>
                 @if(invalidUsernameError)
                 {
-                    <p>Username is already taken</p>
+                    <p class="validation-message">Username is already taken</p>
                 }
             </div>
         } else {

@@ -2,10 +2,17 @@
 :root {
     --sidebarColor: #6495ed;
     --toprowColor: #f7f7f7;
-    --postCardColor: #a89191;
+    --postCardColor: #c0c0c0;
+    --buttonColor: #406970;
+    --buttonColorFocus: #40697081;
+    --replyCardColor: #e9e9e9;
 }
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+h1 {
+    margin-bottom: 1rem;
 }
 
 h1:focus {
@@ -14,6 +21,14 @@ h1:focus {
 
 a, .btn-link {
     color: #0071c1;
+}
+
+.bi:hover {
+    transform: scale(1.1);
+}
+
+.bi:active {
+    transform: scale(0.9);
 }
 
 .btn-primary {
@@ -34,7 +49,34 @@ a, .btn-link {
     outline: 1px solid red;
 }
 
+.input-field {
+    max-width: 12rem;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 1rem;
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.submit-button {
+    background-color: var(--buttonColor);
+    padding: 0 1rem 0 1rem;
+    margin: 0 0 0 1rem;
+}
+
+.submit-button:hover {
+    background-color: var(--buttonColorFocus);
+}
+
 .validation-message {
+    font-size: 14px;
     color: red;
 }
 

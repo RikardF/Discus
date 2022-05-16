@@ -14,6 +14,7 @@ using ExArbete.Models;
 
 IUserService userService = new UserService();
 userService.User = new();
+var cookieExpirationTime = TimeSpan.FromDays(1);
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("ExArbeteIdentityDbContextConnection");
 string firestoreProject = builder.Configuration.GetValue<string>("FirestoreProject");
@@ -29,15 +30,14 @@ Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", firestoreAu
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.ConfigureApplicationCookie(options => {
+    options.ExpireTimeSpan = cookieExpirationTime;
+});
 builder.Services.AddAuthentication().AddGoogle(googleOptions =>
     {
-        //googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-        //googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
         googleOptions.ClientId = "229437423853-8l20s99tb07qlfm4ls16nmqb41r4rvuf.apps.googleusercontent.com";
         googleOptions.ClientSecret = "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";
-        //googleOptions.ClaimActions.MapAll();
-        //googleOptions.ClaimActions.MapJsonKey("urn:google:picture", "picture", "url");
-        //googleOptions.ClaimActions.MapJsonKey("urn:google:name", "name", "name");
+        googleOptions.CorrelationCookie.Expiration = cookieExpirationTime;
         googleOptions.Events.OnCreatingTicket = (context) =>
                 {
                     string? picture = context.User.GetProperty("picture").GetString();
@@ -48,14 +48,15 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
                     userService.User.Email = email;
                     return Task.CompletedTask;
                 };
-
     });
 builder.Services.AddTransient<FirestoreDb>((_) => FirestoreDb.Create(firestoreProject));
-builder.Services.AddDbContext<ExArbeteIdentityDbContext>(options =>
-    options.UseSqlServer(connectionString)); 
+builder.Services.AddDbContext<ExArbeteIdentityDbContext>(options => {
+    options.UseSqlServer(connectionString);
+    }); 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ExArbeteIdentityDbContext>();
 builder.Services.AddSingleton<IUserService>(userService);
+builder.Services.AddScoped<IPostService, PostService>();
 
 var app = builder.Build();
 

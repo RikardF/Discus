@@ -5,12 +5,10 @@ using System.ComponentModel.DataAnnotations;
 namespace ExArbete.Models
 {
     [FirestoreData]
-    public class Post : IPost
+    public class SubPost : IPost
     {
-        [FirestoreDocumentId]
+        [FirestoreProperty]
         public string? Id { get; set; }
-        [FirestoreProperty("category_id")]
-        public string? CategoryId { get; set; }
         [FirestoreProperty]
         [Required]
         [MinLength(2, ErrorMessage = "Message too short. Be more creative please.")]
@@ -21,12 +19,10 @@ namespace ExArbete.Models
         public string? CreatedBy { get; set; }
         [FirestoreProperty]
         public List<string>? Likes { get; set; }
-        [FirestoreProperty("sub-posts")]
-        public List<SubPost>? SubPosts { get; set; }
+        [FirestoreProperty("parent-post-id")]
+        public string? ParentPostId { get; set; }
         [FirestoreProperty]
-        [Required]
-        [MinLength(2, ErrorMessage = "Title too short. Be more creative please.")]
         public string? Title { get; set; }
-        public Post(){}
+        public SubPost(){}
     }
 }

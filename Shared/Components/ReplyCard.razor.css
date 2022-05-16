@@ -1,16 +1,15 @@
 .post-container {
     flex: 1;
-    background-color: var(--postCardColor);
-    border-radius: 5px;
-    margin-bottom: 1rem;
+    background-color: var(--replyCardColor);
     padding: 1rem;
+    padding-right: 0;
+    box-shadow: -5px 0 0 0 #dadada;
 }
 
 .post-title {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    cursor: pointer;
 }
 
 .user-card {
@@ -35,6 +34,7 @@ margin-bottom: 1rem;
 
 .arrow-size {
     font-size: 20px;
+    cursor: pointer;
 }
 
 .expandable {
@@ -47,11 +47,18 @@ margin-bottom: 1rem;
     font-size: 30px;
 }
 
+.content-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
 .content-text {
     flex: 1;
     font-size: 16px;
     padding-left: 1rem;
     align-self: center;
+    cursor: pointer;
 }
 
 .reply-field {
@@ -60,4 +67,11 @@ margin-bottom: 1rem;
     resize: vertical;
     overflow: hidden;
     min-height: fit-content;
+}
+
+.profile-image {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid rgba(73, 73, 73, 0.541);
 }

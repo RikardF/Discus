@@ -1,43 +1,125 @@
 @namespace ExArbete.Shared.Components
 @using ExArbete.Models
+@using ExArbete.Interfaces
+@using Google.Cloud.Firestore
+@inject IPostService postService
+@inject IUserService userService
+@inject FirestoreDb firestoreDb
 
-<div class="post-container">
-    <div class="post-title" @onclick="ExpandPost">
+<div class="post-container @flexMe">
+    <div class="post-title">
         <div class="user-card">
-            <span class="bi bi-person-circle user-icon"></span>
-            <p class="detail-text">Användarnamn</p>
+            <img class="profile-image" src="@userInfo?.GoogleImage" referrerpolicy="no-referrer">
+            <p class="detail-text">@userInfo?.Username</p>
         </div>
-        <p class="title-text">@PostData?.Title</p>
+        <p class="title-text" @onclick="ExpandPost">@PostData?.Title</p>
         <div class="detail-card">
-            <p class="detail-text">@PostData?.CreatedAt.ToDateTime().ToShortDateString() @PostData?.CreatedAt.ToDateTime().ToShortTimeString()</p>
+            <p class="detail-text">@PostData?.CreatedAt.ToDateTime().ToLocalTime().ToShortDateString()
+                @PostData?.CreatedAt.ToDateTime().ToLocalTime().ToShortTimeString()</p>
             <div class="expandable">
-               <p class="detail-text">@PostData?.SubPosts?.Count replies</p> 
-               <i class="bi @ArrowCss arrow-size"></i>
+                <p class="detail-text">@PostData?.SubPosts?.Count replies</p>
+                <i class="bi @ArrowCss arrow-size" @onclick="ExpandPost"></i>
             </div>
-            
+            <span class="bi @replyArrow arrow-size" @onclick="ShowForm"></span>
         </div>
-        
+
     </div>
-    
-    @if(expanded) {
+
+    <div class="expanded-card @Collapse">
+
+
         <p class="content-text">@PostData?.Content</p>
-        if(PostData?.SubPosts != null) {
-            foreach (Post subPost in PostData.SubPosts)
+        @if (showForm)
         {
-            <ReplyCard PostData="@subPost"></ReplyCard>
+            <div>
+                <EditForm class="form-column" EditContext=@editContext OnValidSubmit=@SubmitPost>
+                    <DataAnnotationsValidator />
+                    <div class="form-row">
+                    <InputAreaOnChange @bind-Value="newSubPost.Content" class="form-control" rows="2"
+                    placeholder="Feel free to reply"></InputAreaOnChange>
+                    <button type="submit"
+                    class="btn btn-secondary btn-sm submit-button">Submit</button>
+                    </div>
+                    <ValidationSummary />
+                </EditForm>
+
+            </div>
         }
+        @if (PostData?.SubPosts != null)
+        {
+            @foreach (RenderFragment replyCard in RenderReply(PostData))
+            {
+                @replyCard
+                ;
+            }
         }
-        <textarea class="form-control reply-field" rows="2"></textarea>
-    }
+    </div>
+
+
+
 </div>
 
 @code {
     [Parameter]
     [EditorRequired]
     public Post? PostData { get; set; }
+    private IUser? userInfo = new UserInfo();
+    private SubPost newSubPost = new();
+    private EditContext? editContext;
     private bool expanded = false;
-    private string ArrowCss => expanded ? "bi-caret-down" : "bi-caret-up";
-    private void ExpandPost(){
+    private bool showForm = false;
+    private string Collapse => expanded ? "" : "collapse";
+    private string ArrowCss => expanded ? "bi-caret-down-fill" : "bi-caret-up";
+    protected override void OnInitialized()
+    {
+        editContext = new(newSubPost);
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            userInfo = await postService.GetUserInfo(PostData?.CreatedBy, firestoreDb);
+            await InvokeAsync(() => StateHasChanged());
+        }
+    }
+    private string replyArrow => showForm ? "bi-reply-fill" : "bi-reply";
+    private string flexMe => expanded ? "flex" : "";
+    private void ExpandPost()
+    {
         expanded = !expanded;
+        if (!expanded)
+        {
+            showForm = false;
+        }
+    }
+    private void ShowForm()
+    {
+        showForm = !showForm;
+        if (showForm)
+        {
+            expanded = true;
+        }
+    }
+    private async Task SubmitPost()
+    {
+        newSubPost.Id = Guid.NewGuid().ToString();
+        newSubPost.CreatedAt = Timestamp.GetCurrentTimestamp();
+        newSubPost.CreatedBy = userService.User?.Id;
+        newSubPost.ParentPostId = PostData?.Id;
+        await postService.PublishPost(PostData?.Id, newSubPost, firestoreDb);
+        newSubPost = new();
+        showForm = false;
+    }
+
+    private List<RenderFragment>? RenderReply(IPost mainPost)
+    {
+        List<RenderFragment> replies = new();
+        foreach (SubPost post in PostData.SubPosts.Where(p => p.ParentPostId == mainPost.Id).OrderBy(p => p.CreatedAt))
+        {
+            replies.Add(
+    @<ReplyCard ParentId="@PostData.Id" PostData="@post" Children="@RenderReply(post)"></ReplyCard>
+    );
+        }
+        return replies;
     }
 }
