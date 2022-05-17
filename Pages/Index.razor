@@ -3,6 +3,7 @@
 @using ExArbete.Models
 @using ExArbete.Interfaces
 @using System.Security.Claims
+@using ExArbete.Shared.Components
 @inject FirestoreDb firestoreDb
 @inject IUserService userService
 @inject AuthenticationStateProvider authenticationStateProvider
@@ -17,9 +18,13 @@
             <p>This seems to be the first time you are joining us.</p>
             <p>Before you proceed you need to select a username that will be visible for other users here on this page.</p>
             <div>
-                <EditForm class="form-row" Context="newUserName" Model=@userService.User OnSubmit=@OnUsernameSubmit>
-                    <input class="form-control input-field" @bind-value="userService.User.Username" type="text" placeholder="Enter a username">
+                <EditForm class="form-column" Context="newUserName" EditContext=@editContext OnValidSubmit=@OnUsernameSubmit>
+                    <DataAnnotationsValidator />
+                    <div class="form-row">
+                    <InputOnChange class="form-control input-field" @bind-Value="userSettings.NewUsername" placeholder="Enter a username"></InputOnChange>
                     <button type="submit" class="btn btn-secondary btn-sm submit-button">Submit</button>
+                    </div>
+                    <ValidationSummary />
                 </EditForm>
                 @if(invalidUsernameError)
                 {
@@ -41,6 +46,8 @@
     private bool invalidUsernameError;
     private FirestoreChangeListener firestoreChangeListener;
     private List<Category> categories = new();
+        private EditContext? editContext;
+        private UserSettings userSettings = new();
     protected override async Task OnParametersSetAsync()
     {
         AuthenticationState authenticationState = await authenticationStateProvider.GetAuthenticationStateAsync();
@@ -50,6 +57,10 @@
                 }
             
     }
+        protected override void OnInitialized()
+    {
+        editContext = new(userSettings);
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         
@@ -57,26 +68,10 @@
 
     private async Task OnUsernameSubmit()
     {
-        Console.WriteLine("blaa");
-        invalidUsernameError = await userService.CreateUser(firestoreDb);
+        invalidUsernameError = await userService.CreateUser(userSettings, firestoreDb);
         
         await InvokeAsync(() => StateHasChanged());
     }
-
-    @* private async Task<List<Category>> GetCategories()
-    {
-        CollectionReference collection = firestoreDb.Collection("categories");
-
-        QuerySnapshot snapshot = await firestoreDb.Collection("categories").GetSnapshotAsync();
-        @* foreach (DocumentSnapshot doc in snapshot)
-            {
-            Console.WriteLine(doc.Id);
-            Category cat = doc.ConvertTo<Category>();
-            Console.WriteLine(cat.Name);
-            }
-            return new List<Category>(); 
-        return snapshot.Documents.Select(d => d.ConvertTo<Category>()).ToList<Category>();
-    } *@
 
     public void Dispose()
     {

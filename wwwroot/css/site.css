@@ -1,14 +1,16 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 :root {
-    --sidebarColor: #6495ed;
-    --toprowColor: #f7f7f7;
-    --postCardColor: #c0c0c0;
-    --buttonColor: #406970;
-    --buttonColorFocus: #40697081;
-    --replyCardColor: #e9e9e9;
+    --sidebarColor: #A0BCC2;
+    --toprowColor: #DAE5D0;
+    --postCardColor: #F9EBC8;
+    --buttonColor: #A0BCC2;
+    --buttonColorFocus: #A0BCC281;
+    --replyCardColor: #FEFBE7;
+    --bodyBackgroundColor: #FEFBE755;
 }
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: var(--bodyBackgroundColor);
 }
 
 h1 {
@@ -78,6 +80,42 @@ a, .btn-link {
 .validation-message {
     font-size: 14px;
     color: red;
+}
+
+.profile-page-picture {
+    display: inline-flex;
+    width: 96px;
+    height: 96px;
+    overflow: hidden;
+    vertical-align: middle;
+}
+
+.profile-page-picture img {
+    max-width: 96px;
+    max-height: 96px;
+    margin: auto;
+}
+
+.file-input-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+  cursor: pointer;
+}
+
+.file-input-label {
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    height: 96px;
+    width: 96px;
+    margin-right: 1rem;
 }
 
 #blazor-error-ui {

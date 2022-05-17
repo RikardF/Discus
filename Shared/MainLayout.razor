@@ -21,8 +21,11 @@
                 <AuthorizeView>
                     <Authorized>
                             <div class="auth-row">
-                                <p class="name-text">@(userService.User.GoogleName ?? "")</p>
-                            <img class="profile-image" src="@userService.User.GoogleImage" @onclick=ToggleMenu referrerpolicy="no-referrer">
+                                <p class="name-text">@(userService.User?.GoogleName ?? "")</p>
+                                <div class="profile-image">
+                                    <img src="@userService.User.ProfileImage" @onclick=ToggleMenu referrerpolicy="no-referrer">
+                                </div>
+                            
                             </div>
                         
                     </Authorized>
@@ -36,8 +39,8 @@
                     <ul class="user-menu-list">
                         <AuthorizeView>
                             <Authorized>
-                                <li>hem</li>
-                                <li>hej</li>
+                                <li>Administration</li>
+                                <li><NavLink href="/profile">Profile</NavLink></li>
                                 <li><NavLink href="/Identity/Account/Logout">Log out</NavLink></li>
                             </Authorized>
                             <NotAuthorized>
@@ -71,20 +74,13 @@
     {
         if (firstRender)
         {
-            if(userService.User.GoogleName == null)
-            {
                 AuthenticationState authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
                 
-                if(authenticationState.User.Identity. IsAuthenticated)
+                if(authenticationState.User.Identity.IsAuthenticated)
                 {
                     await userService.GetDataIfExistingUser(authenticationState.User.Claims.Where(c => c.Type == ClaimTypes.Email).First().Value, firestoreDb);
-                    foreach (Claim item in authenticationState.User.Claims)
-                    {
-                        Console.WriteLine(item.Type, item.Value);
-                    }
                     
                 }
-            }
             categoryList = await GetCategories();
             categoryList.OrderBy(d => d.Name);
             await InvokeAsync(() => StateHasChanged());

@@ -44,7 +44,7 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
                     string? picture = context.User.GetProperty("picture").GetString();
                     string? name = context.User.GetProperty("name").GetString();
                     string? email = context.User.GetProperty("email").GetString();
-                    userService.User.GoogleImage = picture;
+                    userService.User.ProfileImage = picture;
                     userService.User.GoogleName = name;
                     userService.User.Email = email;
                     return Task.CompletedTask;
@@ -58,6 +58,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ExArbeteIdentityDbContext>();
 builder.Services.AddSingleton<IUserService>(userService);
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddSingleton<ICloudStorageService, CloudStorageService>();
 
 var app = builder.Build();
 

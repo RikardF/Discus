@@ -33,10 +33,10 @@
             </div>
 
 
-            <div id="counter" class="nav-item">
-                <NavLink class="nav-link" href="counter" onclick='@(async () => await GetDistanceFromTop("counter"))'>
-                    <span class="oi oi-plus" aria-hidden="true"></span>
-                    <p class="menu-text">Counter</p>
+            <div id="profile" class="nav-item">
+                <NavLink class="nav-link" href="profile" onclick='@(async () => await GetDistanceFromTop("profile"))'>
+                    <span class="oi bi-person" aria-hidden="true"></span>
+                    <p class="menu-text">Profile</p>
                 </NavLink>
             </div>
             <div id="fetchdata" class="nav-item">
@@ -82,19 +82,25 @@
     {
         if (firstRender)
         {
-            await Task.Delay(1000);
-            await RenderSelectionBulb();
+            MyNavigationManager.LocationChanged += RenderSelectionBulb;
+            MyNavigationManager.NavigateTo("/");
+            @* await Task.Delay(1000);
+            await RenderSelectionBulb(); *@
             isLoading = false;
+        }
+        if(!isLoading)
+        {
+            
         }
         await InvokeAsync(() => StateHasChanged());
     }
 
-    public async Task RenderSelectionBulb() {
+    public void RenderSelectionBulb(object sender, LocationChangedEventArgs e) {
         Uri uri = new Uri(MyNavigationManager.Uri);
             if(uri.AbsolutePath == "/") {
-                await GetDistanceFromTop("home");
+                GetDistanceFromTop("home");
             } else {
-                   await GetDistanceFromTop(uri.AbsolutePath.Trim('/')); 
+                   GetDistanceFromTop(uri.AbsolutePath.Trim('/')); 
                 
             }
     }

@@ -83,6 +83,7 @@
         newPost.SubPosts = new();
         await postService.PublishPost(null, newPost, firestoreDb);
         newPost = new();
+        editContext = new(newPost);
     }
     private async Task<List<Post>> GetPosts()
     {
@@ -91,18 +92,4 @@
         QuerySnapshot snapshot = await byCategory.GetSnapshotAsync();
         return snapshot.Documents.Select(d => d.ConvertTo<Post>()).ToList<Post>();
     }
-
-    @* private async Task SubmitPost() {
-        CollectionReference collection = firestoreDb.Collection("posts");
-        Post post = new Post {
-            Title = "Detta är en titel",
-            Content = "Detta är content",
-            CategoryId = "T160YqqlyYk5Ux2F3HsX",
-            Likes = new List<string>(),
-            SubPosts = new List<Post>(),
-            CreatedAt = Timestamp.GetCurrentTimestamp()
-        };
-        DocumentReference doc = await collection.AddAsync(post);
-    } *@
-
 }

@@ -70,8 +70,18 @@ margin-bottom: 1rem;
 }
 
 .profile-image {
+    display: inline-flex;
+    overflow: hidden;
     width: 30px;
     height: 30px;
+    vertical-align: middle;
     border-radius: 50%;
     border: 1px solid rgba(73, 73, 73, 0.541);
+
+}
+
+.profile-image img {
+    max-width: 30px;
+    max-height: 30px;
+    margin: auto;
 }

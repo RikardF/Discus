@@ -9,6 +9,6 @@ namespace ExArbete.Interfaces
         public string? Username { get; set; }
         public Timestamp CreatedAt { get; set; }
         public Timestamp LastVisit { get; set; }
-        public string? GoogleImage { get; set; }
+        public string? ProfileImage { get; set; }
     }
 }

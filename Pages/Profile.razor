@@ -1,0 +1,103 @@
+﻿@page "/profile"
+@using ExArbete.Interfaces
+@using ExArbete.Models
+@using ExArbete.Shared.Components
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+@using Google.Cloud.Firestore
+@using System.IO
+@inject IWebHostEnvironment env
+@inject IUserService userService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject FirestoreDb firestoreDb
+@inject ICloudStorageService cloudStorageService
+@inject NavigationManager MyNavigationManager
+
+<PageTitle>Profile</PageTitle>
+
+<h1>Profile</h1>
+<AuthorizeView>
+    <Authorized>
+        @if (userService.IsNewUser)
+        {
+            <p>You need to complete your registration before entering this section.</p>
+        }
+        else
+        {
+            <EditForm Context="ProfileDataContext" class="form-row" EditContext=@editContext OnValidSubmit=@SubmitChanges>
+                <DataAnnotationsValidator />
+                <div class="form-column">
+                    <div class="form-row">
+                        <label class="file-input-label" for="image-selector"><div class="profile-page-picture"><img class="scale-picture"
+                            src="@imgUrl" alt="profile-picture"></div></label>
+                        <InputFile accept=".jpg,.jpeg,.png" OnChange="OnNewImage" id="image-selector" class="file-input-hidden"></InputFile>
+                        <div class="form-column mb-0 justify-content-center">
+                            <p class="mr-3">Username:</p>
+                            <InputOnChange @bind-Value="userSettings.NewUsername" class="form-control mb-0"
+                            placeholder="@userService.User.Username">
+                            </InputOnChange>
+                        </div>
+                        <div class="form-column justify-content-end mb-0">
+
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <ValidationSummary />
+                        <button type="submit" class="btn btn-secondary submit-button m-0">Save Changes</button>
+                    </div>
+                </div>
+            </EditForm>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <p>You need to <NavLink href="/Identity/Account/Login">sign in</NavLink> to view this page</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private EditContext editContext;
+    private UserSettings userSettings = new();
+    private string imgUrl = "";
+    protected override void OnInitialized()
+    {
+        editContext = new(userSettings);
+    }
+    protected override async Task OnParametersSetAsync() {
+        await GetImageUrl();
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            if(authenticationState.User.Identity.IsAuthenticated)
+                {
+                    await userService.GetDataIfExistingUser(authenticationState.User.Claims.Where(c => c.Type == ClaimTypes.Email).First().Value, firestoreDb);
+                    
+                    await InvokeAsync(() => StateHasChanged());
+                }
+        } 
+    }
+    private async Task OnNewImage(InputFileChangeEventArgs e)
+    {
+        userSettings.NewProfileImage = e.GetMultipleFiles();
+        await GetImageUrl();
+    }
+    private async Task SubmitChanges()
+    {
+        await userService.UpdateProfile(userSettings, firestoreDb, cloudStorageService);
+        MyNavigationManager.NavigateTo("/");
+    }
+    private async Task GetImageUrl()
+    {
+        if(userSettings.NewProfileImage?.Count() > 0) 
+        {
+            var buffers = new byte[userSettings.NewProfileImage[0].Size];
+            await userSettings.NewProfileImage[0].OpenReadStream().ReadAsync(buffers);
+            string imageType = userSettings.NewProfileImage[0].ContentType;
+            imgUrl =$"data:{imageType};base64,{Convert.ToBase64String(buffers)}";
+        } else {
+            imgUrl = userService.User.ProfileImage;
+        }
+    }
+}

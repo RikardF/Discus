@@ -9,7 +9,7 @@
 <div class="post-container">
     <div class="post-title">
         <div class="user-card">
-            <img class="profile-image" src="@userInfo?.GoogleImage" referrerpolicy="no-referrer">
+            <img class="profile-image" src="@userInfo?.ProfileImage" referrerpolicy="no-referrer">
             <p class="detail-text">@userInfo?.Username</p>
         </div>
         <p class="content-text" @onclick="ExpandPost">@PostData?.Content</p>
@@ -99,6 +99,7 @@
         newSubPost.ParentPostId = PostData?.Id;
         await postService.PublishPost(ParentId, newSubPost, firestoreDb);
         newSubPost = new();
+        editContext = new(newSubPost);
         showForm = false;
     }
 }

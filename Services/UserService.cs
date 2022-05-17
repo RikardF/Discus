@@ -1,6 +1,7 @@
 using ExArbete.Interfaces;
 using ExArbete.Models;
 using Google.Cloud.Firestore;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components;
 
 namespace ExArbete.Services
@@ -25,11 +26,12 @@ namespace ExArbete.Services
             }
         }
 
-        public async Task<bool> CreateUser(FirestoreDb firestoreDb)
+        public async Task<bool> CreateUser(UserSettings userSettings, FirestoreDb firestoreDb)
         {
             bool error;
             User.CreatedAt = Timestamp.GetCurrentTimestamp();
             User.LastVisit = Timestamp.GetCurrentTimestamp();
+            User.Username = userSettings.NewUsername;
 
             CollectionReference collection = firestoreDb.Collection("users");
             Query byUsername = collection.WhereEqualTo("Username", User.Username);
@@ -41,8 +43,28 @@ namespace ExArbete.Services
                 DocumentReference doc = await collection.AddAsync(User);
                 User.Id = doc.Id;
                 error = false;
+                IsNewUser = false;
             }
             return error;
+        }
+        public async Task UpdateProfile(UserSettings newInfo, FirestoreDb firestoreDb, ICloudStorageService cloudStorageService)
+        {
+            CollectionReference collection = firestoreDb.Collection("users");
+            if(newInfo.NewProfileImage?.Count() > 0)
+            {
+                bool imageExist = await cloudStorageService.CheckIfImageExist(User?.Id);
+                if(imageExist)
+                {
+                    await cloudStorageService.DeleteFileAsync(User.Id);
+                }
+                string newImageUrl = await cloudStorageService.UploadFileAsync(newInfo.NewProfileImage.First(), User.Id);
+                User.ProfileImage = newImageUrl;
+            }
+            if(newInfo.NewUsername != null)
+            {
+                User.Username = newInfo.NewUsername;
+            }
+            await collection.Document(User.Id).SetAsync(User);
         }
     }
 }

@@ -1,5 +1,6 @@
 using Google.Cloud.Firestore;
 using ExArbete.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace ExArbete.Models
 {
@@ -16,8 +17,8 @@ namespace ExArbete.Models
         public Timestamp CreatedAt { get; set; }
         [FirestoreProperty("last_visit")]
         public Timestamp LastVisit { get; set; }
-        [FirestoreProperty("google_image")]
-        public string? GoogleImage { get; set; }
+        [FirestoreProperty("profile_image")]
+        public string? ProfileImage { get; set; }
         [FirestoreProperty("google_name")]
         public string? GoogleName { get; set; }
         
