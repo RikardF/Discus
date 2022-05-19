@@ -1,8 +1,6 @@
 using ExArbete.Interfaces;
 using ExArbete.Models;
 using Google.Cloud.Firestore;
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components;
 
 namespace ExArbete.Services
 {
@@ -17,11 +15,13 @@ namespace ExArbete.Services
             Query byEmail = collection.WhereEqualTo("Email", email);
             QuerySnapshot snapshot = await byEmail.GetSnapshotAsync();
 
-            if(snapshot.Documents.Count() > 0)
+            if (snapshot.Documents.Count() > 0)
             {
                 User = snapshot.Documents.First().ConvertTo<User>();
                 this.IsNewUser = false;
-            } else {
+            }
+            else
+            {
                 this.IsNewUser = true;
             }
         }
@@ -29,17 +29,19 @@ namespace ExArbete.Services
         public async Task<bool> CreateUser(UserSettings userSettings, FirestoreDb firestoreDb)
         {
             bool error;
-            User.CreatedAt = Timestamp.GetCurrentTimestamp();
+            User!.CreatedAt = Timestamp.GetCurrentTimestamp();
             User.LastVisit = Timestamp.GetCurrentTimestamp();
             User.Username = userSettings.NewUsername;
 
             CollectionReference collection = firestoreDb.Collection("users");
             Query byUsername = collection.WhereEqualTo("Username", User.Username);
             QuerySnapshot snapshot = await byUsername.GetSnapshotAsync();
-            if(snapshot.Documents.Count() > 0)
+            if (snapshot.Documents.Count() > 0)
             {
                 error = true;
-            } else {
+            }
+            else
+            {
                 DocumentReference doc = await collection.AddAsync(User);
                 User.Id = doc.Id;
                 error = false;
@@ -50,21 +52,21 @@ namespace ExArbete.Services
         public async Task UpdateProfile(UserSettings newInfo, FirestoreDb firestoreDb, ICloudStorageService cloudStorageService)
         {
             CollectionReference collection = firestoreDb.Collection("users");
-            if(newInfo.NewProfileImage?.Count() > 0)
+            if (newInfo.NewProfileImage?.Count() > 0)
             {
-                bool imageExist = await cloudStorageService.CheckIfImageExist(User?.Id);
-                if(imageExist)
+                bool imageExist = await cloudStorageService.CheckIfImageExist(User?.Id!);
+                if (imageExist)
                 {
-                    await cloudStorageService.DeleteFileAsync(User.Id);
+                    await cloudStorageService.DeleteFileAsync(User?.Id!);
                 }
-                string newImageUrl = await cloudStorageService.UploadFileAsync(newInfo.NewProfileImage.First(), User.Id);
-                User.ProfileImage = newImageUrl;
+                string newImageUrl = await cloudStorageService.UploadFileAsync(newInfo.NewProfileImage.First(), User?.Id!);
+                User!.ProfileImage = newImageUrl;
             }
-            if(newInfo.NewUsername != null)
+            if (newInfo.NewUsername != null)
             {
-                User.Username = newInfo.NewUsername;
+                User!.Username = newInfo.NewUsername;
             }
-            await collection.Document(User.Id).SetAsync(User);
+            await collection.Document(User?.Id).SetAsync(User);
         }
     }
 }

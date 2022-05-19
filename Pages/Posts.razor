@@ -1,7 +1,6 @@
 @page "/posts/{categoryId}"
 @using ExArbete.Shared.Components
 @using ExArbete.Interfaces
-@using Microsoft.AspNetCore.Authorization
 @inject IHttpContextAccessor httpContextAccessor
 @inject IUserService userService
 @inject IPostService postService
@@ -35,7 +34,7 @@
                     </div>
                     <ValidationSummary />
                 </EditForm>
-
+            
             </div>
             @foreach (Post post in postService.PostList.FindAll(p => p.CategoryId == CategoryId).OrderByDescending(p => p.CreatedAt))
             {
@@ -63,7 +62,7 @@
     {
         editContext = new(newPost);
     }
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnAfterRender(bool firstRender)
     {
         if(firstRender){
             firestoreChangeListener = firestoreDb.Collection("posts")
@@ -81,15 +80,9 @@
         newPost.CreatedAt = Timestamp.GetCurrentTimestamp();
         newPost.CreatedBy = userService.User?.Id;
         newPost.SubPosts = new();
+        newPost.Likes = new();
         await postService.PublishPost(null, newPost, firestoreDb);
         newPost = new();
         editContext = new(newPost);
-    }
-    private async Task<List<Post>> GetPosts()
-    {
-        CollectionReference collection = firestoreDb.Collection("posts");
-        Query byCategory = collection.WhereEqualTo("category_id", CategoryId).OrderByDescending("created_at");
-        QuerySnapshot snapshot = await byCategory.GetSnapshotAsync();
-        return snapshot.Documents.Select(d => d.ConvertTo<Post>()).ToList<Post>();
     }
 }

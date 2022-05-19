@@ -18,6 +18,7 @@ flex-direction: column;
 justify-content: center;
 align-items: center;
 margin-bottom: 1rem;
+margin-right: 1rem;
 }
 
 .detail-card {
@@ -47,18 +48,23 @@ margin-bottom: 1rem;
     font-size: 30px;
 }
 
-.content-row {
+.content-column {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 .content-text {
     flex: 1;
     font-size: 16px;
-    padding-left: 1rem;
-    align-self: center;
+    height: fit-content;
+    align-self: flex-start;
     cursor: pointer;
+}
+
+.content-text:hover {
+    transform: scale(1.1);
 }
 
 .reply-field {
@@ -84,4 +90,15 @@ margin-bottom: 1rem;
     max-width: 30px;
     max-height: 30px;
     margin: auto;
+}
+
+.like-container {
+    background-color: grey;
+    height: 1rem;
+    align-self: center;
+    color: white;
+    margin-left: 1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    border-radius: 0.5rem;
 }

@@ -3,9 +3,7 @@
 @using ExArbete.Models
 @using ExArbete.Shared.Components
 @using System.Security.Claims
-@using System.ComponentModel.DataAnnotations
 @using Google.Cloud.Firestore
-@using System.IO
 @inject IWebHostEnvironment env
 @inject IUserService userService
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -34,7 +32,7 @@
                         <div class="form-column mb-0 justify-content-center">
                             <p class="mr-3">Username:</p>
                             <InputOnChange @bind-Value="userSettings.NewUsername" class="form-control mb-0"
-                            placeholder="@userService.User.Username">
+                            placeholder="@userService.User?.Username">
                             </InputOnChange>
                         </div>
                         <div class="form-column justify-content-end mb-0">
@@ -55,7 +53,7 @@
 </AuthorizeView>
 
 @code {
-    private EditContext editContext;
+    private EditContext? editContext;
     private UserSettings userSettings = new();
     private string imgUrl = "";
     protected override void OnInitialized()
@@ -70,7 +68,7 @@
         if (firstRender)
         {
             var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            if(authenticationState.User.Identity.IsAuthenticated)
+            if(authenticationState.User.Identity!.IsAuthenticated)
                 {
                     await userService.GetDataIfExistingUser(authenticationState.User.Claims.Where(c => c.Type == ClaimTypes.Email).First().Value, firestoreDb);
                     
@@ -97,7 +95,7 @@
             string imageType = userSettings.NewProfileImage[0].ContentType;
             imgUrl =$"data:{imageType};base64,{Convert.ToBase64String(buffers)}";
         } else {
-            imgUrl = userService.User.ProfileImage;
+            imgUrl = userService.User?.ProfileImage!;
         }
     }
 }

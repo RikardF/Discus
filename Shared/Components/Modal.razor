@@ -1,0 +1,42 @@
+@namespace ExArbete.Shared.Components
+
+<div class="modal-backdrop" tabindex="-1" role="dialog" style="display: block;">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@ModalTitle</h5>
+            </div>
+            <div class="modal-body">
+                <p>@ModalText</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary submit-button" @onclick="@Confirm">Ok!</button>
+                <button type="button" class="btn btn-secondary submit-button" @onclick="@Close"
+                    data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public string? ModalText { get; set; }
+    [Parameter]
+    [EditorRequired]
+    public string? ModalTitle { get; set; }
+    [Parameter]
+    [EditorRequired]
+    public Action? OnClose { get; set; }
+    [Parameter]
+    [EditorRequired]
+    public Action? OnConfirm { get; set; }
+    private void Close()
+    {
+        OnClose?.Invoke();
+    }
+    private void Confirm()
+    {
+        OnConfirm?.Invoke();
+    }
+}

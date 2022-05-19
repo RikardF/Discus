@@ -8,8 +8,13 @@
     --replyCardColor: #FEFBE7;
     --bodyBackgroundColor: #FEFBE755;
 }
+
+@font-face {
+    font-family: "Montserrat-Variable";
+    src: url(../fonts/Montserrat-VariableFont_wght.ttf) format("truetype");
+}
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: "Montserrat-Variable";
     background-color: var(--bodyBackgroundColor);
 }
 

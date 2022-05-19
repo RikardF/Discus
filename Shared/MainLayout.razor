@@ -12,56 +12,63 @@
 
 <div class="page">
     <CascadingValue Value="@categoryList">
-        <NavMenu/>
+        <NavMenu />
 
-    <main>
-        <div class="top-row px-4">
-            
-            <div class="user-menu">
-                <AuthorizeView>
-                    <Authorized>
+        <main>
+            <div class="top-row px-4">
+
+                <div class="user-menu">
+                    <AuthorizeView>
+                        <Authorized>
                             <div class="auth-row">
                                 <p class="name-text">@(userService.User?.GoogleName ?? "")</p>
                                 <div class="profile-image">
-                                    <img src="@userService.User.ProfileImage" @onclick=ToggleMenu referrerpolicy="no-referrer">
+                                    <img src="@userService.User?.ProfileImage" @onclick=ToggleMenu
+                                        referrerpolicy="no-referrer">
                                 </div>
-                            
-                            </div>
-                        
-                    </Authorized>
-                    <NotAuthorized>
-                        <span class="bi bi-person-circle user-icon" @onclick=ToggleMenu>
-                </span>
-                    </NotAuthorized>
-                </AuthorizeView>
-                
-                <div id="dropdown" class="dropdown-menu @CssCollapse">
-                    <ul class="user-menu-list">
-                        <AuthorizeView>
-                            <Authorized>
-                                <li>Administration</li>
-                                <li><NavLink href="/profile">Profile</NavLink></li>
-                                <li><NavLink href="/Identity/Account/Logout">Log out</NavLink></li>
-                            </Authorized>
-                            <NotAuthorized>
-                                <li><NavLink href="/Identity/Account/Login">Log in</NavLink></li>
-                            </NotAuthorized>
-                        </AuthorizeView>
-                        
-                        
-                    </ul>
-                </div>
-            </div>
-            
-            
-        </div>
 
-        <article class="content px-4" @onclick='async (eventargs) => await HandleClick(eventargs)'>
-            
-              @Body  
-            
-        </article>
-    </main>
+                            </div>
+
+                        </Authorized>
+                        <NotAuthorized>
+                            <span class="bi bi-person-circle user-icon" @onclick=ToggleMenu>
+                            </span>
+                        </NotAuthorized>
+                    </AuthorizeView>
+
+                    <div id="dropdown" class="dropdown-menu @CssCollapse">
+                        <ul class="user-menu-list">
+                            <AuthorizeView>
+                                <Authorized>
+                                    <li>Administration</li>
+                                    <li>
+                                        <NavLink href="/profile">Profile</NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink href="/Identity/Account/Logout">Log out</NavLink>
+                                    </li>
+                                </Authorized>
+                                <NotAuthorized>
+                                    <li>
+                                        <NavLink href="/Identity/Account/Login">Log in</NavLink>
+                                    </li>
+                                </NotAuthorized>
+                            </AuthorizeView>
+
+
+                        </ul>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <article class="content px-4" @onclick='async (eventargs) => await HandleClick(eventargs)'>
+
+                @Body
+
+            </article>
+        </main>
     </CascadingValue>
 </div>
 
@@ -74,29 +81,33 @@
     {
         if (firstRender)
         {
-                AuthenticationState authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-                
-                if(authenticationState.User.Identity.IsAuthenticated)
-                {
-                    await userService.GetDataIfExistingUser(authenticationState.User.Claims.Where(c => c.Type == ClaimTypes.Email).First().Value, firestoreDb);
-                    
-                }
+            AuthenticationState authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+            if (authenticationState.User.Identity!.IsAuthenticated)
+            {
+                await userService.GetDataIfExistingUser(authenticationState.User.Claims.Where(c => c.Type ==
+                ClaimTypes.Email).First().Value, firestoreDb);
+
+            }
             categoryList = await GetCategories();
             categoryList.OrderBy(d => d.Name);
             await InvokeAsync(() => StateHasChanged());
         }
     }
 
-    private void ToggleMenu() {
-        
+    private void ToggleMenu()
+    {
+
         collapseMenu = !collapseMenu;
     }
 
-    private async Task HandleClick(MouseEventArgs eventArgs) {
+    private async Task HandleClick(MouseEventArgs eventArgs)
+    {
         bool outsideDropdownMenu = await JS.InvokeAsync<bool>("handleDropdownMenu", eventArgs.PageX, eventArgs.PageY);
-            if(!collapseMenu && outsideDropdownMenu) {
-                collapseMenu = outsideDropdownMenu;
-            }
+        if (!collapseMenu && outsideDropdownMenu)
+        {
+            collapseMenu = outsideDropdownMenu;
+        }
     }
 
     private async Task<List<Category>> GetCategories()

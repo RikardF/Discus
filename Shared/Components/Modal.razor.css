@@ -1,0 +1,16 @@
+.modal-backdrop {
+  background-color: #00000085;
+  opacity: 1;
+  display: flex !important;
+}
+
+.modal-dialog {
+  max-width: 30rem;
+  width: 100%;
+  margin: auto;
+  padding: 1rem;
+}
+
+.modal-header {
+  background-color: var(--toprowColor);
+}

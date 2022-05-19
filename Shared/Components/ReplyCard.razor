@@ -12,42 +12,49 @@
             <img class="profile-image" src="@userInfo?.ProfileImage" referrerpolicy="no-referrer">
             <p class="detail-text">@userInfo?.Username</p>
         </div>
-        <p class="content-text" @onclick="ExpandPost">@PostData?.Content</p>
+        <div class="content-column">
+            <p class="content-text mb-1" @onclick="ExpandPost">@PostData?.Content</p>
+            <div class="form-row mb-3 ml-4">
+                <span class="bi @ThumbCss arrow-size" @onclick="@(async () => await OnLikePost())"></span>
+                <p class="detail-text like-container">@(PostData?.Likes?.Count() ?? 0)</p>
+            </div>
+        </div>
         <div class="detail-card">
-            <p class="detail-text">@PostData?.CreatedAt.ToDateTime().ToLocalTime().ToShortDateString() @PostData?.CreatedAt.ToDateTime().ToLocalTime().ToShortTimeString()</p>
+            <p class="detail-text">@PostData?.CreatedAt.ToDateTime().ToLocalTime().ToShortDateString()
+                @PostData?.CreatedAt.ToDateTime().ToLocalTime().ToShortTimeString()</p>
             <div class="expandable">
-               <p class="detail-text">@postService.PostList.Where(p => p.Id == ParentId).First().SubPosts?.Where(p => p.ParentPostId == PostData.Id).Count() replies</p> 
-               <i class="bi @ArrowCss arrow-size" @onclick="ExpandPost"></i>
+                <p class="detail-text">@postService.PostList.Where(p => p.Id == ParentId).First().SubPosts?.Where(p =>
+                    p.ParentPostId == PostData?.Id).Count() replies</p>
+                <i class="bi @ArrowCss arrow-size" @onclick="ExpandPost"></i>
             </div>
             <span class="bi @replyArrow arrow-size" @onclick="ShowForm"></span>
         </div>
-        
     </div>
-    
-    @if(expanded) {
-        if(showForm)
+
+    @if (expanded)
+    {
+        if (showForm)
         {
             <div>
-        <EditForm class="form-column" EditContext=@editContext OnValidSubmit=@SubmitPost>
+                <EditForm class="form-column mb-0" EditContext=@editContext OnValidSubmit=@SubmitPost>
                     <DataAnnotationsValidator />
                     <div class="form-row">
-                    <InputAreaOnChange @bind-Value="newSubPost.Content" class="form-control" rows="2"
+                        <InputAreaOnChange @bind-Value="newSubPost.Content" class="form-control" rows="2"
                     placeholder="Feel free to reply"></InputAreaOnChange>
-                    <button type="submit"
-                    class="btn btn-secondary btn-sm submit-button">Submit</button>
+                        <button type="submit" class="btn btn-secondary btn-sm submit-button">Submit</button>
                     </div>
                     <ValidationSummary />
                 </EditForm>
-        </div>
+            </div>
         }
-        @foreach (RenderFragment replyCard in Children)
+        @foreach (RenderFragment replyCard in Children!)
         {
-            @replyCard;
+            @replyCard
         }
-        
-        
+
+
     }
-    
+
 </div>
 
 @code {
@@ -57,7 +64,7 @@
     [Parameter]
     public List<RenderFragment>? Children { get; set; }
     [Parameter]
-    public string ParentId { get; set; }
+    public string? ParentId { get; set; }
     private EditContext? EditContext { get; set; }
     private SubPost newSubPost = new();
     private EditContext? editContext;
@@ -66,37 +73,54 @@
     private bool showForm = false;
     private string ArrowCss => expanded ? "bi-caret-down-fill" : "bi-caret-up";
     private string replyArrow => showForm ? "bi-reply-fill" : "bi-reply";
+    private string ThumbCss => PostData?.Likes?.Find(l => l == userService?.User?.Id)?.Count() > 0 ?
+    "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up";
     protected override void OnInitialized()
     {
         editContext = new(newSubPost);
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(firstRender){
-            userInfo = await postService.GetUserInfo(PostData?.CreatedBy, firestoreDb);
+        if (firstRender)
+        {
+            userInfo = await postService.GetUserInfo(PostData?.CreatedBy!, firestoreDb);
             await InvokeAsync(() => StateHasChanged());
         }
     }
-    private void ExpandPost(){
+    private async Task OnLikePost()
+    {
+        if (PostData?.Likes!.Find(l => l == userService?.User?.Id)?.Count() > 0)
+        {
+            await postService.UnLikePost(ParentId, PostData?.Id!, userService.User?.Id!, firestoreDb);
+        }
+        else
+        {
+            await postService.LikePost(ParentId, PostData?.Id!, userService.User?.Id!, firestoreDb);
+        }
+    }
+    private void ExpandPost()
+    {
         expanded = !expanded;
-        if(!expanded)
+        if (!expanded)
         {
             showForm = false;
         }
     }
-    private void ShowForm(){
+    private void ShowForm()
+    {
         showForm = !showForm;
-        if(showForm)
+        if (showForm)
         {
             expanded = true;
         }
     }
-    private async Task SubmitPost() 
+    private async Task SubmitPost()
     {
         newSubPost.Id = Guid.NewGuid().ToString();
         newSubPost.CreatedAt = Timestamp.GetCurrentTimestamp();
         newSubPost.CreatedBy = userService.User?.Id;
         newSubPost.ParentPostId = PostData?.Id;
+        newSubPost.Likes = new();
         await postService.PublishPost(ParentId, newSubPost, firestoreDb);
         newSubPost = new();
         editContext = new(newSubPost);

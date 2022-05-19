@@ -6,10 +6,10 @@
 @using ExArbete.Shared.Components
 
 <div id="sidebar" class="flex-column">
-<div class="active-nav @CollapseCssClass" style="margin-top: @activeNavDistanceFromTop"></div>
+    <div class="active-nav @CollapseCssClass" style="margin-top: @activeNavDistanceFromTop"></div>
 
     <div class="sidebar @CollapseCssClass">
-        
+
         <div class="top-row @CollapseCssClass ps-3 navbar navbar-dark">
 
             <a class="navbar-brand" href="">ExArbete</a>
@@ -21,14 +21,15 @@
         <nav class="flex-column">
 
             <div id="home" class="nav-item">
-                <NavLink class="nav-link" href="" Match="NavLinkMatch.All" onclick='@(async () => await GetDistanceFromTop("home"))'>
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All"
+                    onclick='@(async () => await GetDistanceFromTop("home"))'>
                     <span class="oi bi-house-door" aria-hidden="true">
                         <Badge BadgeNumber="2" />
                     </span>
                     <p class="menu-text">Home</p>
 
                 </NavLink>
-                
+
 
             </div>
 
@@ -40,7 +41,8 @@
                 </NavLink>
             </div>
             <div id="fetchdata" class="nav-item">
-                <NavLink class="nav-link" href="fetchdata" onclick='@(async () => await GetDistanceFromTop("fetchdata"))'>
+                <NavLink class="nav-link" href="fetchdata"
+                    onclick='@(async () => await GetDistanceFromTop("fetchdata"))'>
                     <i class="oi oi-list-rich" aria-hidden="true"></i>
                     <p class="menu-text">Fetch dataaaaaa</p>
 
@@ -49,7 +51,8 @@
             @foreach (Category category in categoryList ?? new List<Category>())
             {
                 <div id='@("posts/" + category.Id)' class="nav-item">
-                    <NavLink class="nav-link" href='@("posts/" + category.Id)' onclick='@(async () => await GetDistanceFromTop("posts/" + @category.Id))'>
+                    <NavLink class="nav-link" href='@("posts/" + category.Id)'
+                    onclick='@(async () => await GetDistanceFromTop("posts/" + @category.Id))'>
                         <i class="@category.Icon colored oi"></i>
                         <p class="menu-text">@category.Name</p>
                     </NavLink>
@@ -82,38 +85,46 @@
     {
         if (firstRender)
         {
-            MyNavigationManager.LocationChanged += RenderSelectionBulb;
+            MyNavigationManager.LocationChanged += async (s, e) => await RenderSelectionBulb(s!, e);
             MyNavigationManager.NavigateTo("/");
             @* await Task.Delay(1000);
-            await RenderSelectionBulb(); *@
+                await RenderSelectionBulb(); *@
             isLoading = false;
         }
-        if(!isLoading)
+        if (!isLoading)
         {
-            
+
         }
         await InvokeAsync(() => StateHasChanged());
     }
 
-    public void RenderSelectionBulb(object sender, LocationChangedEventArgs e) {
+    public async Task RenderSelectionBulb(object sender, LocationChangedEventArgs e)
+    {
         Uri uri = new Uri(MyNavigationManager.Uri);
-            if(uri.AbsolutePath == "/") {
-                GetDistanceFromTop("home");
-            } else {
-                   GetDistanceFromTop(uri.AbsolutePath.Trim('/')); 
-                
-            }
+        if (uri.AbsolutePath == "/")
+        {
+            await GetDistanceFromTop("home");
+        }
+        else
+        {
+            await GetDistanceFromTop(uri.AbsolutePath.Trim('/'));
+
+        }
     }
 
-    private async Task GetDistanceFromTop(string? id) {
+    private async Task GetDistanceFromTop(string? id)
+    {
         int distanceFromTop = await JS.InvokeAsync<int>("getDistanceFromTop", id);
         Uri uri = new Uri(MyNavigationManager.Uri);
-        if(uri.AbsolutePath == "/") {
-            activeNavDistanceFromTop = distanceFromTop + 56  + "px";
-        } else {
-           activeNavDistanceFromTop = distanceFromTop  + "px"; 
+        if (uri.AbsolutePath == "/")
+        {
+            activeNavDistanceFromTop = distanceFromTop + 56 + "px";
         }
-        
+        else
+        {
+            activeNavDistanceFromTop = distanceFromTop + "px";
+        }
+
         await InvokeAsync(() => StateHasChanged());
     }
 
@@ -122,5 +133,5 @@
         collapseNavMenu = !collapseNavMenu;
     }
 
-    
+
 }

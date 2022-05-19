@@ -6,15 +6,23 @@
 @inject IUserService userService
 @inject FirestoreDb firestoreDb
 
+@if (showModal)
+{
+    <Modal OnClose="@CloseModal" OnConfirm="@(async () => await DeletePost())"
+    ModalText="This will delete the post and all of its replies" ModalTitle="Warning!"></Modal>
+}
+
 <div class="post-container @flexMe">
     <div class="post-title">
         <div class="user-card">
             <div class="profile-image">
-<img src="@userInfo?.ProfileImage" referrerpolicy="no-referrer">
+                <img src="@userInfo?.ProfileImage" referrerpolicy="no-referrer">
             </div>
             <p class="detail-text">@userInfo?.Username</p>
         </div>
-        <p class="title-text" @onclick="ExpandPost">@PostData?.Title</p>
+        <div class="title-column">
+            <p class="title-text" @onclick="ExpandPost">@PostData?.Title</p>
+        </div>
         <div class="detail-card">
             <p class="detail-text">@PostData?.CreatedAt.ToDateTime().ToLocalTime().ToShortDateString()
                 @PostData?.CreatedAt.ToDateTime().ToLocalTime().ToShortTimeString()</p>
@@ -22,7 +30,13 @@
                 <p class="detail-text">@PostData?.SubPosts?.Count replies</p>
                 <i class="bi @ArrowCss arrow-size" @onclick="ExpandPost"></i>
             </div>
-            <span class="bi @replyArrow arrow-size" @onclick="ShowForm"></span>
+            <div class="expandable">
+                @if (PostData?.CreatedBy == userService.User?.Id)
+                {
+                    <span class="bi bi-trash3 arrow-size" @onclick="@ShowModal"></span>
+                }
+                <span class="bi @replyArrow arrow-size" @onclick="ShowForm"></span>
+            </div>
         </div>
 
     </div>
@@ -30,17 +44,20 @@
     <div class="expanded-card @Collapse">
 
 
-        <p class="content-text">@PostData?.Content</p>
+        <p class="content-text mb-1">@PostData?.Content</p>
+        <div class="form-row mb-4">
+            <span class="bi @ThumbCss arrow-size" @onclick="@(async () => await OnLikePost())"></span>
+            <p class="detail-text like-container">@(PostData?.Likes?.Count() ?? 0)</p>
+        </div>
         @if (showForm)
         {
             <div>
                 <EditForm class="form-column" EditContext=@editContext OnValidSubmit=@SubmitPost>
                     <DataAnnotationsValidator />
                     <div class="form-row">
-                    <InputAreaOnChange @bind-Value="newSubPost.Content" class="form-control" rows="2"
-                    placeholder="Feel free to reply"></InputAreaOnChange>
-                    <button type="submit"
-                    class="btn btn-secondary btn-sm submit-button">Submit</button>
+                        <InputAreaOnChange @bind-Value="newSubPost.Content" class="form-control" rows="2"
+                        placeholder="Feel free to reply"></InputAreaOnChange>
+                        <button type="submit" class="btn btn-secondary btn-sm submit-button">Submit</button>
                     </div>
                     <ValidationSummary />
                 </EditForm>
@@ -49,10 +66,9 @@
         }
         @if (PostData?.SubPosts != null)
         {
-            @foreach (RenderFragment replyCard in RenderReply(PostData))
+            @foreach (RenderFragment replyCard in RenderReply(PostData)!)
             {
                 @replyCard
-                ;
             }
         }
     </div>
@@ -70,8 +86,13 @@
     private EditContext? editContext;
     private bool expanded = false;
     private bool showForm = false;
+    private bool showModal = false;
     private string Collapse => expanded ? "" : "collapse";
     private string ArrowCss => expanded ? "bi-caret-down-fill" : "bi-caret-up";
+    private string replyArrow => showForm ? "bi-reply-fill" : "bi-reply";
+    private string flexMe => expanded ? "flex" : "";
+    private string ThumbCss => PostData?.Likes?.Find(l => l == userService?.User?.Id)?.Count() > 0 ?
+    "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up";
     protected override void OnInitialized()
     {
         editContext = new(newSubPost);
@@ -80,12 +101,22 @@
     {
         if (firstRender)
         {
-            userInfo = await postService.GetUserInfo(PostData?.CreatedBy, firestoreDb);
+            userInfo = await postService.GetUserInfo(PostData?.CreatedBy!, firestoreDb);
             await InvokeAsync(() => StateHasChanged());
         }
     }
-    private string replyArrow => showForm ? "bi-reply-fill" : "bi-reply";
-    private string flexMe => expanded ? "flex" : "";
+
+    private async Task OnLikePost()
+    {
+        if (PostData?.Likes!.Find(l => l == userService?.User?.Id)?.Count() > 0)
+        {
+            await postService.UnLikePost(null, PostData?.Id!, userService.User?.Id!, firestoreDb);
+        }
+        else
+        {
+            await postService.LikePost(null, PostData?.Id!, userService.User?.Id!, firestoreDb);
+        }
+    }
     private void ExpandPost()
     {
         expanded = !expanded;
@@ -108,6 +139,7 @@
         newSubPost.CreatedAt = Timestamp.GetCurrentTimestamp();
         newSubPost.CreatedBy = userService.User?.Id;
         newSubPost.ParentPostId = PostData?.Id;
+        newSubPost.Likes = new();
         await postService.PublishPost(PostData?.Id, newSubPost, firestoreDb);
         newSubPost = new();
         editContext = new(newSubPost);
@@ -117,12 +149,28 @@
     private List<RenderFragment>? RenderReply(IPost mainPost)
     {
         List<RenderFragment> replies = new();
-        foreach (SubPost post in PostData.SubPosts.Where(p => p.ParentPostId == mainPost.Id).OrderBy(p => p.CreatedAt))
+        foreach (SubPost post in PostData?.SubPosts?.Where(p => p.ParentPostId == mainPost.Id)?.OrderBy(p => p.CreatedAt)!)
         {
             replies.Add(
     @<ReplyCard ParentId="@PostData.Id" PostData="@post" Children="@RenderReply(post)"></ReplyCard>
     );
         }
         return replies;
+    }
+
+    private async Task DeletePost()
+    {
+        await postService.DeletePost(PostData?.Id!, firestoreDb);
+        showModal = false;
+    }
+
+    private void ShowModal()
+    {
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
     }
 }

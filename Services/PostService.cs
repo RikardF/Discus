@@ -29,5 +29,41 @@ namespace ExArbete.Services
             DocumentSnapshot snapshot = await doc.GetSnapshotAsync();
             return snapshot.ConvertTo<UserInfo>();
         }
+        public async Task DeletePost(string postId, FirestoreDb firestoreDb)
+        {
+            CollectionReference collection = firestoreDb.Collection("posts");
+            DocumentReference doc = collection.Document(postId);
+            await doc.DeleteAsync();
+        }
+        public async Task LikePost(string? parentId, string postId, string userId, FirestoreDb firestoreDb)
+        {
+            CollectionReference collection = firestoreDb.Collection("posts");
+            if(parentId != null)
+            {
+                DocumentReference doc = collection.Document(parentId);
+                DocumentSnapshot snapshot = await doc.GetSnapshotAsync();
+                List<SubPost> subPosts = snapshot.ConvertTo<Post>().SubPosts!;
+                subPosts?.Where(s => s.Id == postId)?.First()?.Likes?.Add(userId);
+                await doc.UpdateAsync("sub-posts", subPosts);
+            } else {
+                DocumentReference doc = collection.Document(postId);
+                await doc.UpdateAsync("Likes", FieldValue.ArrayUnion(userId));
+            }
+        }
+        public async Task UnLikePost(string? parentId, string postId, string userId, FirestoreDb firestoreDb)
+        {
+            CollectionReference collection = firestoreDb.Collection("posts");
+            if(parentId != null)
+            {
+                DocumentReference doc = collection.Document(parentId);
+                DocumentSnapshot snapshot = await doc.GetSnapshotAsync();
+                List<SubPost> subPosts = snapshot.ConvertTo<Post>().SubPosts!;
+                subPosts?.Where(s => s.Id == postId)?.First()?.Likes?.Remove(userId);
+                await doc.UpdateAsync("sub-posts", subPosts);
+            } else {
+                DocumentReference doc = collection.Document(postId);
+                await doc.UpdateAsync("Likes", FieldValue.ArrayRemove(userId));
+            }
+        }
     }
 }

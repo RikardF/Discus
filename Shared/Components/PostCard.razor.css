@@ -70,12 +70,36 @@ margin-bottom: 1rem;
     font-size: 30px;
 }
 
+.title-column {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.like-container {
+    background-color: grey;
+    height: 1rem;
+    align-self: center;
+    color: white;
+    margin-left: 1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    border-radius: 0.5rem;
+}
+
 .title-text {
+    margin-top: 1rem;
     flex: 1;
     font-size: 18px;
     padding-left: 1rem;
-    align-self: center;
+    align-self: flex-start;
+    height: fit-content;
     cursor: pointer;
+}
+
+.title-text:hover {
+    transform: scale(1.1);
 }
 
 .reply-field {

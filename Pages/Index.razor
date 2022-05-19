@@ -13,25 +13,29 @@
 <AuthorizeView>
     <Authorized>
         <h1>Hello @userService.User?.GoogleName</h1>
-        @if(userService.IsNewUser)
+        @if (userService.IsNewUser)
         {
             <p>This seems to be the first time you are joining us.</p>
             <p>Before you proceed you need to select a username that will be visible for other users here on this page.</p>
             <div>
-                <EditForm class="form-column" Context="newUserName" EditContext=@editContext OnValidSubmit=@OnUsernameSubmit>
+                <EditForm class="form-column" Context="newUserName" EditContext=@editContext
+                OnValidSubmit=@OnUsernameSubmit>
                     <DataAnnotationsValidator />
                     <div class="form-row">
-                    <InputOnChange class="form-control input-field" @bind-Value="userSettings.NewUsername" placeholder="Enter a username"></InputOnChange>
-                    <button type="submit" class="btn btn-secondary btn-sm submit-button">Submit</button>
+                        <InputOnChange class="form-control input-field" @bind-Value="userSettings.NewUsername"
+                        placeholder="Enter a username"></InputOnChange>
+                        <button type="submit" class="btn btn-secondary btn-sm submit-button">Submit</button>
                     </div>
                     <ValidationSummary />
                 </EditForm>
-                @if(invalidUsernameError)
+                @if (invalidUsernameError)
                 {
                     <p class="validation-message">Username is already taken</p>
                 }
             </div>
-        } else {
+        }
+        else
+        {
             <p>Welcome back!</p>
         }
     </Authorized>
@@ -44,38 +48,28 @@
 
 @code {
     private bool invalidUsernameError;
-    private FirestoreChangeListener firestoreChangeListener;
     private List<Category> categories = new();
-        private EditContext? editContext;
-        private UserSettings userSettings = new();
+    private EditContext? editContext;
+    private UserSettings userSettings = new();
     protected override async Task OnParametersSetAsync()
     {
         AuthenticationState authenticationState = await authenticationStateProvider.GetAuthenticationStateAsync();
-            if(authenticationState.User.Identity.IsAuthenticated)
-                {
-                    await userService.GetDataIfExistingUser(authenticationState.User.Claims.Where(c => c.Type == ClaimTypes.Email).First().Value, firestoreDb);
-                }
-            
+        if (authenticationState.User.Identity!.IsAuthenticated)
+        {
+            await userService.GetDataIfExistingUser(authenticationState.User.Claims.Where(c => c.Type ==
+            ClaimTypes.Email).First().Value, firestoreDb);
+        }
+
     }
-        protected override void OnInitialized()
+    protected override void OnInitialized()
     {
         editContext = new(userSettings);
-    }
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        
     }
 
     private async Task OnUsernameSubmit()
     {
         invalidUsernameError = await userService.CreateUser(userSettings, firestoreDb);
-        
-        await InvokeAsync(() => StateHasChanged());
-    }
 
-    public void Dispose()
-    {
-        firestoreChangeListener?.StopAsync();
-        Console.WriteLine("stop");
+        await InvokeAsync(() => StateHasChanged());
     }
 }
