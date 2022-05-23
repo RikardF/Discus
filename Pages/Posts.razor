@@ -4,15 +4,16 @@
 @inject IHttpContextAccessor httpContextAccessor
 @inject IUserService userService
 @inject IPostService postService
+@inject ICategoryService categoryService
 @inject AuthenticationStateProvider authProvider
 
 
-<PageTitle>@categoryList?.Find(c => c.Id == CategoryId)?.Name</PageTitle>
+<PageTitle>@categoryService.CategoryList?.Find(c => c.Id == CategoryId)?.Name</PageTitle>
 
 @using ExArbete.Models
 @using Google.Cloud.Firestore
 @inject FirestoreDb firestoreDb
-<h1>@categoryList?.Find(c => c.Id == CategoryId)?.Name</h1>
+<h1>@categoryService.CategoryList?.Find(c => c.Id == CategoryId)?.Name</h1>
 
 <AuthorizeView>
     <Authorized>
@@ -52,11 +53,8 @@
 @code {
     [Parameter]
     public string? CategoryId { get; set; }
-    [CascadingParameter]
-    protected List<Category>? categoryList { get; set; }
     private Post newPost = new();
     private EditContext? editContext;
-    private FirestoreChangeListener? firestoreChangeListener;
     
     protected override void OnInitialized()
     {
@@ -65,14 +63,9 @@
     protected override void OnAfterRender(bool firstRender)
     {
         if(firstRender){
-            firestoreChangeListener = firestoreDb.Collection("posts")
-                        .Listen(async (snapshot) =>
-                        {
-                            postService.PostList.Clear();
-                            postService.PostList.AddRange(snapshot.Documents.Select(d => d.ConvertTo<Post>()));
-                            await InvokeAsync(() => StateHasChanged());
-                        });
+            postService.OnPostDataChanged += async (s, e) => await InvokeAsync(() => StateHasChanged());
         }
+        categoryService.ClearBadgeValue(CategoryId!);
     }
         private async Task SubmitPost()
     {

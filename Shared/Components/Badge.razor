@@ -1,11 +1,33 @@
 @namespace ExArbete.Shared.Components
+@inject ICategoryService categoryService
+@using ExArbete.Interfaces
 
-<div class="badge-alert">
+<div class="badge-alert @Hide">
     <p class="badge-text">@BadgeNumber</p>
 </div>
 
 @code {
     [Parameter]
     [EditorRequired]
+    public string? CategoryId { get; set; }
     public int BadgeNumber { get; set; }
+    private string Hide => BadgeNumber == 0 ? "hide" : "";
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            categoryService.BadgeValueChanged += (s, e) => GetBadgeNumber();
+            await InvokeAsync(() => StateHasChanged());
+        }
+    }
+    
+    private void GetBadgeNumber()
+    {
+        if(categoryService.BadgeValues.ContainsKey(CategoryId!))
+        {
+            BadgeNumber = categoryService.BadgeValues.Where(k => k.Key == CategoryId).First().Value;
+        } else {
+            BadgeNumber = 0;
+        }
+    }
 }

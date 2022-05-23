@@ -11,5 +11,7 @@ namespace ExArbete.Interfaces
         Task DeletePost(string postId, FirestoreDb firestoreDb);
         Task LikePost(string? parentId, string postId, string userId, FirestoreDb firestoreDb);
         Task UnLikePost(string? parentId, string postId, string userId, FirestoreDb firestoreDb);
+        event EventHandler? OnPostDataChanged;
+        void PostDataChanged();
     }
 }

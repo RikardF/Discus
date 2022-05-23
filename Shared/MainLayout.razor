@@ -7,11 +7,12 @@
 @using System.Security.Claims
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IUserService userService
+@inject IPostService postService
+@inject ICategoryService categoryService
 
 <PageTitle>ExArbete</PageTitle>
 
 <div class="page">
-    <CascadingValue Value="@categoryList">
         <NavMenu />
 
         <main>
@@ -69,14 +70,12 @@
 
             </article>
         </main>
-    </CascadingValue>
 </div>
 
 @code {
-    private List<Category> categoryList = new();
     private bool collapseMenu = true;
+    private FirestoreChangeListener? firestoreChangeListener;
     private string? CssCollapse => collapseMenu ? "collapse" : null;
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -85,12 +84,19 @@
 
             if (authenticationState.User.Identity!.IsAuthenticated)
             {
+                firestoreChangeListener = firestoreDb.Collection("posts")
+                        .Listen((snapshot) =>
+                        {
+                            postService.PostList = new();
+                            postService.PostList.AddRange(snapshot.Documents.Select(d => d.ConvertTo<Post>()));
+                            categoryService.CalculateBadgeValues(postService.PostList, userService.User!.LastVisit);
+                            postService.PostDataChanged();
+                        });
+
                 await userService.GetDataIfExistingUser(authenticationState.User.Claims.Where(c => c.Type ==
                 ClaimTypes.Email).First().Value, firestoreDb);
 
             }
-            categoryList = await GetCategories();
-            categoryList.OrderBy(d => d.Name);
             await InvokeAsync(() => StateHasChanged());
         }
     }
@@ -108,13 +114,5 @@
         {
             collapseMenu = outsideDropdownMenu;
         }
-    }
-
-    private async Task<List<Category>> GetCategories()
-    {
-        CollectionReference collection = firestoreDb.Collection("categories");
-        Query orderByName = collection.OrderBy("Name");
-        QuerySnapshot snapshot = await orderByName.GetSnapshotAsync();
-        return snapshot.Documents.Select(d => d.ConvertTo<Category>()).ToList<Category>();
     }
 }

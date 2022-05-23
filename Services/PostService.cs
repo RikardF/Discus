@@ -7,6 +7,7 @@ namespace ExArbete.Services
     public class PostService : IPostService
     {
         public List<Post> PostList { get; set; }
+        public event EventHandler? OnPostDataChanged;
         public PostService()
         {
             this.PostList = new();
@@ -34,6 +35,7 @@ namespace ExArbete.Services
             CollectionReference collection = firestoreDb.Collection("posts");
             DocumentReference doc = collection.Document(postId);
             await doc.DeleteAsync();
+            PostDataChanged();
         }
         public async Task LikePost(string? parentId, string postId, string userId, FirestoreDb firestoreDb)
         {
@@ -49,6 +51,7 @@ namespace ExArbete.Services
                 DocumentReference doc = collection.Document(postId);
                 await doc.UpdateAsync("Likes", FieldValue.ArrayUnion(userId));
             }
+            PostDataChanged();
         }
         public async Task UnLikePost(string? parentId, string postId, string userId, FirestoreDb firestoreDb)
         {
@@ -64,6 +67,11 @@ namespace ExArbete.Services
                 DocumentReference doc = collection.Document(postId);
                 await doc.UpdateAsync("Likes", FieldValue.ArrayRemove(userId));
             }
+            PostDataChanged();
+        }
+        public void PostDataChanged()
+        {
+            OnPostDataChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

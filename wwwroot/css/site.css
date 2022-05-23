@@ -116,11 +116,16 @@ a, .btn-link {
 
 .file-input-label {
     border-radius: 10px;
+    box-shadow: 1px 1px 3px 1px #cfcfcf;
     overflow: hidden;
     cursor: pointer;
     height: 96px;
     width: 96px;
     margin-right: 1rem;
+}
+
+.file-input-label:hover {
+    transform: scale(1.05);
 }
 
 #blazor-error-ui {

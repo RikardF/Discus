@@ -83,6 +83,7 @@
     {
         if (firstRender)
         {
+            postService.OnPostDataChanged += async (s, e) => await InvokeAsync(() => StateHasChanged());
             userInfo = await postService.GetUserInfo(PostData?.CreatedBy!, firestoreDb);
             await InvokeAsync(() => StateHasChanged());
         }

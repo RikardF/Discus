@@ -1,9 +1,14 @@
 ﻿@using ExArbete.Models
 @using Google.Cloud.Firestore
+@using ExArbete.Interfaces
 @inject FirestoreDb firestoreDb
 @inject IJSRuntime JS
 @inject NavigationManager MyNavigationManager
 @using ExArbete.Shared.Components
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IPostService postService
+@inject IUserService userService
+@inject ICategoryService categoryService
 
 <div id="sidebar" class="flex-column">
     <div class="active-nav @CollapseCssClass" style="margin-top: @activeNavDistanceFromTop"></div>
@@ -24,7 +29,6 @@
                 <NavLink class="nav-link" href="" Match="NavLinkMatch.All"
                     onclick='@(async () => await GetDistanceFromTop("home"))'>
                     <span class="oi bi-house-door" aria-hidden="true">
-                        <Badge BadgeNumber="2" />
                     </span>
                     <p class="menu-text">Home</p>
 
@@ -48,12 +52,15 @@
 
                 </NavLink>
             </div>
-            @foreach (Category category in categoryList ?? new List<Category>())
+            @foreach (Category category in categoryService.CategoryList ?? new List<Category>())
             {
                 <div id='@("posts/" + category.Id)' class="nav-item">
                     <NavLink class="nav-link" href='@("posts/" + category.Id)'
                     onclick='@(async () => await GetDistanceFromTop("posts/" + @category.Id))'>
-                        <i class="@category.Icon colored oi"></i>
+                        <i class="@category.Icon colored oi">
+                            <Badge
+                            CategoryId="@category.Id" />
+                        </i>
                         <p class="menu-text">@category.Name</p>
                     </NavLink>
                 </div>
@@ -74,28 +81,23 @@
 
 
 @code {
-    [CascadingParameter]
-    protected List<Category>? categoryList { get; set; }
     private bool collapseNavMenu = true;
     private string? CollapseCssClass => collapseNavMenu ? "collapse" : null;
     private bool isLoading = true;
     private string? activeNavDistanceFromTop;
-
+    protected override async Task OnParametersSetAsync()
+    {
+        await categoryService.GetCategories(firestoreDb);
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             MyNavigationManager.LocationChanged += async (s, e) => await RenderSelectionBulb(s!, e);
             MyNavigationManager.NavigateTo("/");
-            @* await Task.Delay(1000);
-                await RenderSelectionBulb(); *@
             isLoading = false;
+            await InvokeAsync(() => StateHasChanged());
         }
-        if (!isLoading)
-        {
-
-        }
-        await InvokeAsync(() => StateHasChanged());
     }
 
     public async Task RenderSelectionBulb(object sender, LocationChangedEventArgs e)
@@ -107,6 +109,7 @@
         }
         else
         {
+            if (uri.AbsolutePath.Trim('/').StartsWith("Identity")) return;
             await GetDistanceFromTop(uri.AbsolutePath.Trim('/'));
 
         }
@@ -132,6 +135,5 @@
     {
         collapseNavMenu = !collapseNavMenu;
     }
-
 
 }

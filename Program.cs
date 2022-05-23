@@ -1,16 +1,9 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using ExArbete.Data;
 using Google.Cloud.Firestore;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ExArbete.Areas.Identity.Data;
-using Microsoft.AspNetCore.Authentication;
-using System.Security.Claims;
 using ExArbete.Services;
 using ExArbete.Interfaces;
-using ExArbete.Models;
 
 IUserService userService = new UserService();
 userService.User = new();
@@ -18,7 +11,7 @@ var cookieExpirationTime = TimeSpan.FromDays(1);
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("ExArbeteIdentityDbContextConnection");
 builder.Services.AddDbContext<ExArbeteIdentityDbContext>(options =>
-    options.UseSqlServer(connectionString));string firestoreProject = builder.Configuration.GetValue<string>("FirestoreProject");
+    options.UseSqlServer(connectionString)); string firestoreProject = builder.Configuration.GetValue<string>("FirestoreProject");
 string firestoreAuthFile = builder.Configuration.GetValue<string>("FirebaseAuthFile");
 
 if (!Path.IsPathRooted(firestoreAuthFile))
@@ -31,7 +24,8 @@ Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", firestoreAu
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.ConfigureApplicationCookie(options => {
+builder.Services.ConfigureApplicationCookie(options =>
+{
     options.ExpireTimeSpan = cookieExpirationTime;
 });
 builder.Services.AddAuthentication().AddGoogle(googleOptions =>
@@ -51,13 +45,15 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
                 };
     });
 builder.Services.AddTransient<FirestoreDb>((_) => FirestoreDb.Create(firestoreProject));
-builder.Services.AddDbContext<ExArbeteIdentityDbContext>(options => {
+builder.Services.AddDbContext<ExArbeteIdentityDbContext>(options =>
+{
     options.UseSqlServer(connectionString);
-    }); 
+});
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ExArbeteIdentityDbContext>();
 builder.Services.AddSingleton<IUserService>(userService);
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddSingleton<ICloudStorageService, CloudStorageService>();
 
 var app = builder.Build();

@@ -68,5 +68,10 @@ namespace ExArbete.Services
             }
             await collection.Document(User?.Id).SetAsync(User);
         }
+        public async Task UpdateLastVisit(FirestoreDb firestoreDb)
+        {
+            DocumentReference doc = firestoreDb.Collection("users").Document(User?.Id);
+            await doc.UpdateAsync("last_visit", Timestamp.GetCurrentTimestamp());
+        }
     }
 }

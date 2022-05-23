@@ -97,11 +97,15 @@
     {
         editContext = new(newSubPost);
     }
+    protected override async Task OnParametersSetAsync()
+    {
+        userInfo = await postService.GetUserInfo(PostData?.CreatedBy!, firestoreDb);
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            userInfo = await postService.GetUserInfo(PostData?.CreatedBy!, firestoreDb);
+            postService.OnPostDataChanged += async (s, e) => await InvokeAsync(() => StateHasChanged());
             await InvokeAsync(() => StateHasChanged());
         }
     }
@@ -172,5 +176,6 @@
     private void CloseModal()
     {
         showModal = false;
+        StateHasChanged();
     }
 }
