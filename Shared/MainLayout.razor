@@ -9,6 +9,8 @@
 @inject IUserService userService
 @inject IPostService postService
 @inject ICategoryService categoryService
+@using Append.Blazor.Notifications
+@inject INotificationService NotificationService
 
 <PageTitle>ExArbete</PageTitle>
 
@@ -81,14 +83,20 @@
         if (firstRender)
         {
             AuthenticationState authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-
+            PermissionType permission = await NotificationService.RequestPermissionAsync();
             if (authenticationState.User.Identity!.IsAuthenticated)
             {
                 firestoreChangeListener = firestoreDb.Collection("posts")
                         .Listen((snapshot) =>
                         {
+                            int previousCount = postService.PostList.Count();
                             postService.PostList = new();
                             postService.PostList.AddRange(snapshot.Documents.Select(d => d.ConvertTo<Post>()));
+                            if(postService.PostList.Count() > previousCount && previousCount != 0 && userService.User!.EnableNotifications)
+                            {
+                                var awaiter = NotificationService.CreateAsync("ExArbete", "A new post has recently been published").GetAwaiter();
+                                awaiter.OnCompleted(async () => await Task.Delay(100));
+                            }
                             categoryService.CalculateBadgeValues(postService.PostList, userService.User!.LastVisit);
                             postService.PostDataChanged();
                         });

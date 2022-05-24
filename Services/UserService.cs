@@ -32,6 +32,7 @@ namespace ExArbete.Services
             User!.CreatedAt = Timestamp.GetCurrentTimestamp();
             User.LastVisit = Timestamp.GetCurrentTimestamp();
             User.Username = userSettings.NewUsername;
+            User.EnableNotifications = true;
 
             CollectionReference collection = firestoreDb.Collection("users");
             Query byUsername = collection.WhereEqualTo("Username", User.Username);
@@ -66,6 +67,7 @@ namespace ExArbete.Services
             {
                 User!.Username = newInfo.NewUsername;
             }
+            User!.EnableNotifications = newInfo.EnableNotifications;
             await collection.Document(User?.Id).SetAsync(User);
         }
         public async Task UpdateLastVisit(FirestoreDb firestoreDb)

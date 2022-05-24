@@ -21,6 +21,8 @@ namespace ExArbete.Models
         public string? ProfileImage { get; set; }
         [FirestoreProperty("google_name")]
         public string? GoogleName { get; set; }
+        [FirestoreProperty("enable_notifications")]
+        public bool EnableNotifications { get; set; }
         
     }
 }

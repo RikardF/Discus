@@ -6,6 +6,8 @@
 @inject IPostService postService
 @inject ICategoryService categoryService
 @inject AuthenticationStateProvider authProvider
+@using Append.Blazor.Notifications
+@inject INotificationService NotificationService
 
 
 <PageTitle>@categoryService.CategoryList?.Find(c => c.Id == CategoryId)?.Name</PageTitle>
@@ -63,7 +65,9 @@
     protected override void OnAfterRender(bool firstRender)
     {
         if(firstRender){
-            postService.OnPostDataChanged += async (s, e) => await InvokeAsync(() => StateHasChanged());
+            postService.OnPostDataChanged += async (s, e) => {
+                await InvokeAsync(() => StateHasChanged());
+                };
         }
         categoryService.ClearBadgeValue(CategoryId!);
     }

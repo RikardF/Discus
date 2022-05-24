@@ -40,6 +40,10 @@
                         </div>
                     </div>
                     <div class="form-column">
+                        <div class="form-row justify-content-around">
+                            <p class="mr-4">Enable notifications:</p>
+                            <input class="form-check-input ml-4" type="checkbox" @bind-value="userSettings.EnableNotifications" id="flexCheckChecked" checked="@userService.User!.EnableNotifications">
+                        </div>
                         <ValidationSummary />
                         <button type="submit" class="btn btn-secondary submit-button m-0">Save Changes</button>
                     </div>
@@ -88,7 +92,8 @@
     }
     private async Task GetImageUrl()
     {
-        if(userSettings.NewProfileImage?.Count() > 0) 
+        
+        if(userSettings.NewProfileImage != null && userSettings.NewProfileImage.Count() > 0) 
         {
             var buffers = new byte[userSettings.NewProfileImage[0].Size];
             await userSettings.NewProfileImage[0].OpenReadStream().ReadAsync(buffers);

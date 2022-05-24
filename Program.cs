@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ExArbete.Areas.Identity.Data;
 using ExArbete.Services;
 using ExArbete.Interfaces;
+using Append.Blazor.Notifications;
 
 IUserService userService = new UserService();
 userService.User = new();
@@ -55,6 +56,7 @@ builder.Services.AddSingleton<IUserService>(userService);
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddSingleton<ICloudStorageService, CloudStorageService>();
+builder.Services.AddNotifications();
 
 var app = builder.Build();
 
