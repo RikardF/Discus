@@ -1,6 +1,7 @@
 using ExArbete.Interfaces;
 using ExArbete.Models;
 using Google.Cloud.Firestore;
+using ExArbete.Data;
 
 namespace ExArbete.Services
 {
@@ -33,6 +34,7 @@ namespace ExArbete.Services
             User.LastVisit = Timestamp.GetCurrentTimestamp();
             User.Username = userSettings.NewUsername;
             User.EnableNotifications = true;
+            User.UserRole = UserRole.User;
 
             CollectionReference collection = firestoreDb.Collection("users");
             Query byUsername = collection.WhereEqualTo("Username", User.Username);

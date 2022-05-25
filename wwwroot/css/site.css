@@ -101,6 +101,22 @@ a, .btn-link {
     margin: auto;
 }
 
+.admin-page-icon {
+    margin-right: 1rem;
+}
+
+.pad2l {
+    padding-left: 2rem;
+}
+
+.action-icon {
+    cursor: pointer;
+}
+
+.action-icon:hover {
+    transform: scale(1.1) !important;
+}
+
 .file-input-hidden {
   position: absolute;
   width: 1px;

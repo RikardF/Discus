@@ -28,7 +28,19 @@ namespace ExArbete.Services
             CollectionReference collection = firestoreDb.Collection("users");
             DocumentReference doc = collection.Document(userId);
             DocumentSnapshot snapshot = await doc.GetSnapshotAsync();
-            return snapshot.ConvertTo<UserInfo>();
+            if(snapshot.Exists)
+            {
+                return snapshot.ConvertTo<UserInfo>();
+            } else {
+                return new UserInfo() {
+                    Id = "x",
+                    Username = "Deleted user",
+                    ProfileImage = "../images/ghost.png",
+                    LastVisit = Timestamp.GetCurrentTimestamp(),
+                    CreatedAt = Timestamp.GetCurrentTimestamp()
+                };
+            }
+            
         }
         public async Task DeletePost(string postId, FirestoreDb firestoreDb)
         {

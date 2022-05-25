@@ -11,6 +11,7 @@
 @inject ICategoryService categoryService
 @using Append.Blazor.Notifications
 @inject INotificationService NotificationService
+@using ExArbete.Data
 
 <PageTitle>ExArbete</PageTitle>
 
@@ -43,7 +44,12 @@
                         <ul class="user-menu-list">
                             <AuthorizeView>
                                 <Authorized>
-                                    <li>Administration</li>
+                                    @if (userService.User!.UserRole == UserRole.Owner)
+                                    {
+                                        <li>
+                                            <NavLink href="/admin">Admin</NavLink>
+                                        </li>
+                                    }
                                     <li>
                                         <NavLink href="/profile">Profile</NavLink>
                                     </li>
@@ -87,7 +93,7 @@
             if (authenticationState.User.Identity!.IsAuthenticated)
             {
                 firestoreChangeListener = firestoreDb.Collection("posts")
-                        .Listen((snapshot) =>
+                        .Listen(async (snapshot) =>
                         {
                             int previousCount = postService.PostList.Count();
                             postService.PostList = new();
@@ -98,6 +104,7 @@
                                 awaiter.OnCompleted(async () => await Task.Delay(100));
                             }
                             categoryService.CalculateBadgeValues(postService.PostList, userService.User!.LastVisit);
+                            await userService.UpdateLastVisit(firestoreDb);
                             postService.PostDataChanged();
                         });
 

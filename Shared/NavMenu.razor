@@ -109,7 +109,7 @@
         }
         else
         {
-            if (uri.AbsolutePath.Trim('/').StartsWith("Identity")) return;
+            if (uri.AbsolutePath.Trim('/').StartsWith("Identity") || uri.AbsolutePath.Trim('/').StartsWith("admin")) return;
             await GetDistanceFromTop(uri.AbsolutePath.Trim('/'));
 
         }

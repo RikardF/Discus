@@ -57,6 +57,7 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddSingleton<ICloudStorageService, CloudStorageService>();
 builder.Services.AddNotifications();
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 var app = builder.Build();
 

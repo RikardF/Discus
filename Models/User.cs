@@ -1,6 +1,6 @@
 using Google.Cloud.Firestore;
 using ExArbete.Interfaces;
-using System.ComponentModel.DataAnnotations;
+using ExArbete.Data;
 
 namespace ExArbete.Models
 {
@@ -23,6 +23,7 @@ namespace ExArbete.Models
         public string? GoogleName { get; set; }
         [FirestoreProperty("enable_notifications")]
         public bool EnableNotifications { get; set; }
-        
+        [FirestoreProperty("user_role")]
+        public UserRole UserRole { get; set; }
     }
 }

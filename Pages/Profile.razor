@@ -95,10 +95,15 @@
         
         if(userSettings.NewProfileImage != null && userSettings.NewProfileImage.Count() > 0) 
         {
-            var buffers = new byte[userSettings.NewProfileImage[0].Size];
-            await userSettings.NewProfileImage[0].OpenReadStream().ReadAsync(buffers);
-            string imageType = userSettings.NewProfileImage[0].ContentType;
-            imgUrl =$"data:{imageType};base64,{Convert.ToBase64String(buffers)}";
+            if(userSettings.NewProfileImage[0].Size > 512000)
+            {
+                imgUrl = "../images/cross.png";
+            } else {
+                var buffers = new byte[userSettings.NewProfileImage[0].Size];
+                await userSettings.NewProfileImage[0].OpenReadStream().ReadAsync(buffers);
+                string imageType = userSettings.NewProfileImage[0].ContentType;
+                imgUrl =$"data:{imageType};base64,{Convert.ToBase64String(buffers)}";
+            }
         } else {
             imgUrl = userService.User?.ProfileImage!;
         }

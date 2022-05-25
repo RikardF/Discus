@@ -16,12 +16,12 @@
     {
         if (firstRender)
         {
-            categoryService.BadgeValueChanged += (s, e) => GetBadgeNumber();
-            await InvokeAsync(() => StateHasChanged());
+            categoryService.BadgeValueChanged += async (s, e) => await GetBadgeNumber();
+            await GetBadgeNumber();
         }
     }
     
-    private void GetBadgeNumber()
+    private async Task GetBadgeNumber()
     {
         if(categoryService.BadgeValues.ContainsKey(CategoryId!))
         {
@@ -29,5 +29,6 @@
         } else {
             BadgeNumber = 0;
         }
+        await InvokeAsync(() => StateHasChanged());
     }
 }

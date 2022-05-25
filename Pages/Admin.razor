@@ -1,0 +1,341 @@
+@page "/admin"
+@using ExArbete.Interfaces
+@using ExArbete.Models
+@using ExArbete.Shared.Components
+@using System.Security.Claims
+@using Google.Cloud.Firestore
+@inject IWebHostEnvironment env
+@inject IUserService userService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject FirestoreDb firestoreDb
+@inject ICloudStorageService cloudStorageService
+@inject NavigationManager MyNavigationManager
+@inject IAdminService adminService
+@inject ICategoryService categoryService
+@using ExArbete.Data
+
+<PageTitle>Admin</PageTitle>
+
+<h1>Admin</h1>
+<AuthorizeView>
+    <Authorized>
+        @if (userService.User!.UserRole != UserRole.Owner)
+        {
+            <p>You do not have permission to access this page.</p>
+        }
+        else
+        {
+            @if (showDeleteUserModal)
+            {
+                <Modal OnClose="@CloseModal" OnConfirm="@(async () => await DeleteUser())"
+            ModalText='This will delete the user from database. All posts related to the user will appear as created by "Deleted User".'
+            ModalTitle="Warning!"></Modal>
+            }
+            @if (showUpdateUserModal)
+            {
+                <Modal OnClose="@CloseModal" OnConfirm="@(async () => await UpdateUser())"
+            ModalText='This will update the users role.' ModalTitle="Warning!"></Modal>
+            }
+            @if (showDeleteCategoryModal)
+            {
+                <Modal OnClose="@CloseModal" OnConfirm="@(async () => await DeleteCategory())"
+            ModalText='This will delete the category and you will not be able to access the related posts.'
+            ModalTitle="Warning!"></Modal>
+            }
+            @if (showUpdateCategoryModal)
+            {
+                <Modal OnClose="@CloseModal" OnConfirm="@(async () => await UpdateCategory())"
+            ModalText='This will update the category.' ModalTitle="Warning!"></Modal>
+            }
+            <h3>Manage categories:</h3>
+            <EditForm Context="CategoryContext" EditContext=@newCategoryContext OnValidSubmit=@SubmitCategory>
+                <DataAnnotationsValidator />
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Id</th>
+                            <th scope="col">Icon - Valid Bootstrap or Devicon css-name</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Category cat in categoryService.CategoryList)
+                        {
+                            <tr>
+                                <th scope="row">@cat.Id</th>
+                                <td>
+                                    <div class="form-row align-items-center mb-0">
+                                    <i class="@cat.Icon colored oi admin-page-icon"></i> 
+                                <InputOnChange @bind-Value="cat.Icon" class="form-control mb-0"
+                            placeholder="@cat.Icon">
+                            </InputOnChange>
+                            </div>
+                            </td>
+                                <td>
+                                    <InputOnChange @bind-Value="cat.Name" class="form-control mb-0"
+                            placeholder="@cat.Name">
+                            </InputOnChange></td>
+                                <td>
+                                    <span class="bi bi-trash3 action-icon" @onclick="@(() => ShowDeleteCategoryModal(cat))"></span>
+                                <span class="bi bi-sd-card-fill action-icon"
+                            @onclick="@(() => ShowUpdateCategoryModal(cat))"></span>
+                                </td>
+                            </tr>
+                        }
+                        <tr>
+                            <th scope="row"></th>
+                            <td>
+                                <div class="pad2l">
+                                    <InputOnChange class="form-control" @bind-Value="newCategory.Icon"></InputOnChange>
+                                </div>
+                                
+                            </td>
+                            <td>
+                                <InputOnChange class="form-control" @bind-Value="newCategory.Name"></InputOnChange>
+                            </td>
+                            <td>
+                                    <span class="bi bi-plus-circle action-icon" @onclick="@(() => SubmitCategory())"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+
+                <ValidationSummary />
+            </EditForm>
+            <hr class="mt-5">
+
+            <h3>Manage application owners:</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Username</th>
+                        <th scope="col">Last visit</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (User user in adminService.OwnerUsers)
+                    {
+                        <tr>
+                            <th scope="row">@user.Id</th>
+                            <td>@user.Email</td>
+                            <td>@user.Username</td>
+                            <td>@user.LastVisit.ToDateTime().ToLocalTime().ToShortDateString()
+                                @user.LastVisit.ToDateTime().ToLocalTime().ToShortTimeString()</td>
+                            <td>
+                                <select class="form-select" @bind-value="@user.UserRole" @bind-value:event="onchange"
+                            aria-label="Default select example">
+                                    <option selected>@user.UserRole.ToString()</option>
+                                    <option value="@UserRole.Owner">Owner</option>
+                                    <option value="@UserRole.Admin">Admin</option>
+                                    <option value="@UserRole.User">User</option>
+                                </select>
+                            </td>
+                            <td>
+                                <span class="bi bi-trash3 action-icon" @onclick="@(() => ShowDeleteUserModal(user))"></span>
+                                <span class="bi bi-sd-card-fill action-icon"
+                            @onclick="@(() => ShowUpdateUserModal(user))"></span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <hr class="mt-5">
+
+            <h3>Manage application admins:</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Username</th>
+                        <th scope="col">Last visit</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (User user in adminService.AdminUsers)
+                    {
+                        <tr>
+                            <th scope="row">@user.Id</th>
+                            <td>@user.Email</td>
+                            <td>@user.Username</td>
+                            <td>@user.LastVisit.ToDateTime().ToLocalTime().ToShortDateString()
+                                @user.LastVisit.ToDateTime().ToLocalTime().ToShortTimeString()</td>
+                            <td>
+                                <select class="form-select" @bind-value="@user.UserRole" @bind-value:event="onchange"
+                            aria-label="Default select example">
+                                    <option selected>@user.UserRole.ToString()</option>
+                                    <option value="@UserRole.Owner">Owner</option>
+                                    <option value="@UserRole.Admin">Admin</option>
+                                    <option value="@UserRole.User">User</option>
+                                </select>
+                            </td>
+                            <td>
+                                <span class="bi bi-trash3 arrow-size" @onclick="@(() => ShowDeleteUserModal(user))"></span>
+                                <span class="bi bi-sd-card-fill action-icon"
+                            @onclick="@(() => ShowUpdateUserModal(user))"></span>
+                                </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <hr class="mt-5">
+
+            <h3>Manage application users:</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Username</th>
+                        <th scope="col">Last visit</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (User user in adminService.UserUsers)
+                    {
+                        <tr>
+                            <th scope="row">@user.Id</th>
+                            <td>@user.Email</td>
+                            <td>@user.Username</td>
+                            <td>@user.LastVisit.ToDateTime().ToLocalTime().ToShortDateString()
+                                @user.LastVisit.ToDateTime().ToLocalTime().ToShortTimeString()</td>
+                            <td>
+                                <select class="form-select" @bind-value="@user.UserRole" @bind-value:event="onchange"
+                            aria-label="Default select example">
+                                    <option selected>@user.UserRole.ToString()</option>
+                                    <option value="@UserRole.Owner">Owner</option>
+                                    <option value="@UserRole.Admin">Admin</option>
+                                    <option value="@UserRole.User">User</option>
+                                </select>
+                            </td>
+                            <td>
+                                <span class="bi bi-trash3 arrow-size" @onclick="@(() => ShowDeleteUserModal(user))"></span>
+                                <span class="bi bi-sd-card-fill action-icon"
+                            @onclick="@(() => ShowUpdateUserModal(user))"></span>
+                                </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <hr>
+
+        }
+    </Authorized>
+    <NotAuthorized>
+        <p>You need to <NavLink href="/Identity/Account/Login">sign in</NavLink> to view this page</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private EditContext? newCategoryContext;
+    private Category newCategory = new();
+    private bool showDeleteUserModal = false;
+    private bool showUpdateUserModal = false;
+    private bool showDeleteCategoryModal = false;
+    private bool showUpdateCategoryModal = false;
+    private User? SelectedUser { get; set; }
+    private Category? SelectedCategory { get; set; }
+    protected override void OnInitialized()
+    {
+        newCategoryContext = new(newCategory);
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            if (authenticationState.User.Identity!.IsAuthenticated && userService.User!.UserRole == UserRole.Owner)
+            {
+                await adminService.GetUsersByRole(UserRole.Owner, firestoreDb);
+                await adminService.GetUsersByRole(UserRole.Admin, firestoreDb);
+                await adminService.GetUsersByRole(UserRole.User, firestoreDb);
+                await InvokeAsync(() => StateHasChanged());
+            }
+        }
+    }
+    private async Task SubmitCategory()
+    {
+        await adminService.AddCategory(newCategory, firestoreDb);
+        categoryService.CategoryList.Add(newCategory);
+        await InvokeAsync(() => StateHasChanged());
+    }
+    private void ShowDeleteUserModal(User user)
+    {
+        SelectedUser = user;
+        showDeleteUserModal = true;
+    }
+    private void ShowUpdateUserModal(User user)
+    {
+        SelectedUser = user;
+        showUpdateUserModal = true;
+    }
+    private void ShowDeleteCategoryModal(Category cat)
+    {
+        SelectedCategory = cat;
+        showDeleteCategoryModal = true;
+    }
+    private void ShowUpdateCategoryModal(Category cat)
+    {
+        SelectedCategory = cat;
+        showUpdateCategoryModal = true;
+    }
+    private void CloseModal()
+    {
+        showDeleteUserModal = false;
+        showDeleteCategoryModal = false;
+        showUpdateCategoryModal = false;
+        showUpdateUserModal = false;
+        StateHasChanged();
+    }
+    private async Task DeleteUser()
+    {
+        await adminService.DeleteUser(SelectedUser!, firestoreDb);
+        await InvokeAsync(() => StateHasChanged());
+    }
+    private async Task UpdateUser()
+    {
+        await adminService.UpdateUserRole(SelectedUser!, firestoreDb);
+        if(adminService.OwnerUsers.Exists(u => u.Id == SelectedUser?.Id)) adminService.OwnerUsers.RemoveAll(u => u.Id == SelectedUser?.Id);
+        if(adminService.AdminUsers.Exists(u => u.Id == SelectedUser?.Id)) adminService.AdminUsers.RemoveAll(u => u.Id == SelectedUser?.Id);
+        if(adminService.UserUsers.Exists(u => u.Id == SelectedUser?.Id)) adminService.UserUsers.RemoveAll(u => u.Id == SelectedUser?.Id);
+        switch (SelectedUser?.UserRole)
+        {
+            case UserRole.Owner: 
+            {
+                adminService.OwnerUsers.Add(SelectedUser);
+                break;
+            }
+            case UserRole.Admin: 
+            {
+                adminService.AdminUsers.Add(SelectedUser);
+                break;
+            }
+            case UserRole.User: 
+            {
+                adminService.UserUsers.Add(SelectedUser);
+                break;
+            }
+        }
+        await InvokeAsync(() => StateHasChanged());
+    }
+    private async Task DeleteCategory()
+    {
+        await adminService.DeleteCategory(SelectedCategory!, firestoreDb);
+        await InvokeAsync(() => StateHasChanged());
+    }
+    private async Task UpdateCategory()
+    {
+        await adminService.UpdateCategory(SelectedCategory!, firestoreDb);
+        await InvokeAsync(() => StateHasChanged());
+    }
+}
