@@ -26,7 +26,9 @@ namespace ExArbete.Services
         {
             using (var memoryStream = new MemoryStream())
             {
-                await imageFile.OpenReadStream().CopyToAsync(memoryStream);
+                string imageType = imageFile.ContentType;
+                var resizedImage = await imageFile.RequestImageFileAsync(imageType, 200, 200);
+                await resizedImage.OpenReadStream(resizedImage.Size).CopyToAsync(memoryStream);
                 var dataObject = await storageClient.UploadObjectAsync(bucketName, fileNameForStorage, null, memoryStream);
                 return dataObject.MediaLink;
             }

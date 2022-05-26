@@ -44,11 +44,11 @@
                     <p class="menu-text">Profile</p>
                 </NavLink>
             </div>
-            <div id="fetchdata" class="nav-item">
-                <NavLink class="nav-link" href="fetchdata"
-                    onclick='@(async () => await GetDistanceFromTop("fetchdata"))'>
-                    <i class="oi oi-list-rich" aria-hidden="true"></i>
-                    <p class="menu-text">Fetch dataaaaaa</p>
+            <div id="messages" class="nav-item">
+                <NavLink class="nav-link" href="messages"
+                    onclick='@(async () => await GetDistanceFromTop("messages"))'>
+                    <i class="oi bi-chat-left" aria-hidden="true"></i>
+                    <p class="menu-text">Messages</p>
 
                 </NavLink>
             </div>
@@ -58,8 +58,11 @@
                     <NavLink class="nav-link" href='@("posts/" + category.Id)'
                     onclick='@(async () => await GetDistanceFromTop("posts/" + @category.Id))'>
                         <i class="@category.Icon colored oi">
-                            <Badge
+                            @if (!userService.IsNewUser)
+                            {
+                                <Badge
                             CategoryId="@category.Id" />
+                            }
                         </i>
                         <p class="menu-text">@category.Name</p>
                     </NavLink>
@@ -75,10 +78,6 @@
         </nav>
     </div>
 </div>
-
-
-
-
 
 @code {
     private bool collapseNavMenu = true;

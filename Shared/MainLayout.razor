@@ -26,9 +26,8 @@
                         <Authorized>
                             <div class="auth-row">
                                 <p class="name-text">@(userService.User?.GoogleName ?? "")</p>
-                                <div class="profile-image">
-                                    <img src="@userService.User?.ProfileImage" @onclick=ToggleMenu
-                                        referrerpolicy="no-referrer">
+                                <div class="profile-image" @onclick=ToggleMenu>
+                                    <img src="@userService.User?.ProfileImage" referrerpolicy="no-referrer">
                                 </div>
 
                             </div>
@@ -44,7 +43,7 @@
                         <ul class="user-menu-list">
                             <AuthorizeView>
                                 <Authorized>
-                                    @if (userService.User!.UserRole == UserRole.Owner)
+                                    @if (userService.User?.UserRole != null && userService.User?.UserRole == UserRole.Owner)
                                     {
                                         <li>
                                             <NavLink href="/admin">Admin</NavLink>

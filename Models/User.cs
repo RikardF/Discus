@@ -25,5 +25,9 @@ namespace ExArbete.Models
         public bool EnableNotifications { get; set; }
         [FirestoreProperty("user_role")]
         public UserRole UserRole { get; set; }
+        public User()
+        {
+            this.UserRole = UserRole.User;
+        }
     }
 }

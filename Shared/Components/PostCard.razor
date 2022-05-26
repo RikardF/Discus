@@ -1,5 +1,6 @@
 @namespace ExArbete.Shared.Components
 @using ExArbete.Models
+@using ExArbete.Data
 @using ExArbete.Interfaces
 @using Google.Cloud.Firestore
 @inject IPostService postService
@@ -31,7 +32,7 @@
                 <i class="bi @ArrowCss arrow-size" @onclick="ExpandPost"></i>
             </div>
             <div class="expandable">
-                @if (PostData?.CreatedBy == userService.User?.Id)
+                @if (PostData?.CreatedBy == userService.User?.Id || userService.User?.UserRole == UserRole.Owner || userService.User?.UserRole == UserRole.Admin)
                 {
                     <span class="bi bi-trash3 arrow-size" @onclick="@ShowModal"></span>
                 }
@@ -153,7 +154,7 @@
     private List<RenderFragment>? RenderReply(IPost mainPost)
     {
         List<RenderFragment> replies = new();
-        foreach (SubPost post in PostData?.SubPosts?.Where(p => p.ParentPostId == mainPost.Id)?.OrderBy(p => p.CreatedAt)!)
+        foreach (SubPost post in PostData?.SubPosts?.Where(p => p.ParentPostId == mainPost.Id)?.OrderByDescending(p => p.CreatedAt)!)
         {
             replies.Add(
     @<ReplyCard ParentId="@PostData.Id" PostData="@post" Children="@RenderReply(post)"></ReplyCard>

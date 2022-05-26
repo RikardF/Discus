@@ -1,12 +1,12 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 :root {
-    --sidebarColor: #A0BCC2;
-    --toprowColor: #DAE5D0;
-    --postCardColor: #F9EBC8;
-    --buttonColor: #A0BCC2;
-    --buttonColorFocus: #A0BCC281;
-    --replyCardColor: #FEFBE7;
-    --bodyBackgroundColor: #FEFBE755;
+    --sidebarColor: #D99830;
+    --toprowColor: #212121;
+    --postCardColor: #EAE1D075;
+    --buttonColor: #eeb861;
+    --buttonColorFocus: #D99830;
+    --replyCardColor: #EAE1D0;
+    --bodyBackgroundColor: #f7f2e950;
 }
 
 @font-face {
@@ -27,7 +27,11 @@ h1:focus {
 }
 
 a, .btn-link {
-    color: #0071c1;
+    color: var(--buttonColor);
+}
+
+a:hover {
+    color: var(--buttonColorFocus);
 }
 
 .bi:hover {
@@ -88,7 +92,7 @@ a, .btn-link {
 }
 
 .profile-page-picture {
-    display: inline-flex;
+    display: flex;
     width: 96px;
     height: 96px;
     overflow: hidden;
@@ -96,9 +100,9 @@ a, .btn-link {
 }
 
 .profile-page-picture img {
-    max-width: 96px;
-    max-height: 96px;
-    margin: auto;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .admin-page-icon {
@@ -142,6 +146,16 @@ a, .btn-link {
 
 .file-input-label:hover {
     transform: scale(1.05);
+}
+
+.form-check-input:checked[type=checkbox] {
+    background-color: var(--buttonColor);
+    border-color: var(--buttonColor);
+}
+
+.form-check-input:focus {
+    border-color: var(--replyCardColor) !important;
+    box-shadow: var(--replyCardColor);
 }
 
 #blazor-error-ui {

@@ -14,3 +14,7 @@
 .modal-header {
   background-color: var(--toprowColor);
 }
+
+.modal-title {
+  color: var(--sidebarColor);
+}

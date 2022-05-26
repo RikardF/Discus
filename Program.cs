@@ -12,7 +12,8 @@ var cookieExpirationTime = TimeSpan.FromDays(1);
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("ExArbeteIdentityDbContextConnection");
 builder.Services.AddDbContext<ExArbeteIdentityDbContext>(options =>
-    options.UseSqlServer(connectionString)); string firestoreProject = builder.Configuration.GetValue<string>("FirestoreProject");
+    options.UseSqlServer(connectionString)); 
+string firestoreProject = builder.Configuration.GetValue<string>("FirestoreProject");
 string firestoreAuthFile = builder.Configuration.GetValue<string>("FirebaseAuthFile");
 
 if (!Path.IsPathRooted(firestoreAuthFile))

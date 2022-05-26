@@ -29,6 +29,8 @@ namespace ExArbete.Services
                 if (!BadgeValues.ContainsKey(cat.Id!))
                 {
                     BadgeValues.Add(cat.Id!, badgeCount);
+                } else {
+                    BadgeValues[cat.Id!] = badgeCount;
                 }
             }
             BadgeValueChanged?.Invoke(this, EventArgs.Empty);
