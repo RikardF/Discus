@@ -77,9 +77,9 @@
                             placeholder="@cat.Name">
                             </InputOnChange></td>
                                 <td>
-                                    <span class="bi bi-trash3 action-icon" @onclick="@(() => ShowDeleteCategoryModal(cat))"></span>
-                                <span class="bi bi-sd-card-fill action-icon"
-                            @onclick="@(() => ShowUpdateCategoryModal(cat))"></span>
+                                    <button class="bi bi-trash3 action-icon" @onclick="@(() => ShowDeleteCategoryModal(cat))"></button>
+                                <button type="submit" class="bi bi-sd-card-fill action-icon"
+                            @onclick="@(() => ShowUpdateCategoryModal(cat))"></button>
                                 </td>
                             </tr>
                         }
@@ -95,7 +95,9 @@
                                 <InputOnChange class="form-control" @bind-Value="newCategory.Name"></InputOnChange>
                             </td>
                             <td>
-                                    <span class="bi bi-plus-circle action-icon" @onclick="@(() => SubmitCategory())"></span>
+                                <button type="submit"
+                    class="bi bi-plus-circle action-icon"></button>
+                                    
                             </td>
                         </tr>
                     </tbody>
@@ -137,9 +139,9 @@
                                 </select>
                             </td>
                             <td>
-                                <span class="bi bi-trash3 action-icon" @onclick="@(() => ShowDeleteUserModal(user))"></span>
-                                <span class="bi bi-sd-card-fill action-icon"
-                            @onclick="@(() => ShowUpdateUserModal(user))"></span>
+                                <button class="bi bi-trash3 action-icon" @onclick="@(() => ShowDeleteUserModal(user))"></button>
+                                <button class="bi bi-sd-card-fill action-icon"
+                            @onclick="@(() => ShowUpdateUserModal(user))"></button>
                             </td>
                         </tr>
                     }
@@ -178,9 +180,9 @@
                                 </select>
                             </td>
                             <td>
-                                <span class="bi bi-trash3 arrow-size" @onclick="@(() => ShowDeleteUserModal(user))"></span>
-                                <span class="bi bi-sd-card-fill action-icon"
-                            @onclick="@(() => ShowUpdateUserModal(user))"></span>
+                                <button class="bi bi-trash3 arrow-size" @onclick="@(() => ShowDeleteUserModal(user))"></button>
+                                <button class="bi bi-sd-card-fill action-icon"
+                            @onclick="@(() => ShowUpdateUserModal(user))"></button>
                                 </td>
                         </tr>
                     }
@@ -219,9 +221,9 @@
                                 </select>
                             </td>
                             <td>
-                                <span class="bi bi-trash3 arrow-size" @onclick="@(() => ShowDeleteUserModal(user))"></span>
-                                <span class="bi bi-sd-card-fill action-icon"
-                            @onclick="@(() => ShowUpdateUserModal(user))"></span>
+                                <button class="bi bi-trash3 arrow-size" @onclick="@(() => ShowDeleteUserModal(user))"></button>
+                                <button class="bi bi-sd-card-fill action-icon"
+                            @onclick="@(() => ShowUpdateUserModal(user))"></button>
                                 </td>
                         </tr>
                     }
@@ -265,8 +267,11 @@
     }
     private async Task SubmitCategory()
     {
-        await adminService.AddCategory(newCategory, firestoreDb);
+        string newId = await adminService.AddCategory(newCategory, firestoreDb);
+        newCategory.Id = newId;
         categoryService.CategoryList.Add(newCategory);
+        newCategory = new();
+        adminService.CategoriesChanged();
         await InvokeAsync(() => StateHasChanged());
     }
     private void ShowDeleteUserModal(User user)
@@ -331,11 +336,16 @@
     private async Task DeleteCategory()
     {
         await adminService.DeleteCategory(SelectedCategory!, firestoreDb);
+        categoryService.CategoryList.Remove(SelectedCategory!);
+        adminService.CategoriesChanged();
         await InvokeAsync(() => StateHasChanged());
     }
     private async Task UpdateCategory()
     {
         await adminService.UpdateCategory(SelectedCategory!, firestoreDb);
+        int index = categoryService.CategoryList.FindIndex(c => c.Id == SelectedCategory?.Id);
+        categoryService.CategoryList[index] = SelectedCategory!;
+        adminService.CategoriesChanged();
         await InvokeAsync(() => StateHasChanged());
     }
 }

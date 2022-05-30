@@ -10,6 +10,7 @@ namespace ExArbete.Services
         public List<User> OwnerUsers { get; set; }
         public List<User> AdminUsers { get; set; }
         public List<User> UserUsers { get; set; }
+        public event EventHandler? OnCategoriesChanged;
         public AdminService()
         {
             OwnerUsers = new();
@@ -50,10 +51,11 @@ namespace ExArbete.Services
             DocumentReference doc = collection.Document(userToUpdate.Id);
             await doc.UpdateAsync("user_role", userToUpdate.UserRole);
         }
-        public async Task AddCategory(Category newCategory, FirestoreDb firestoreDb)
+        public async Task<string> AddCategory(Category newCategory, FirestoreDb firestoreDb)
         {
             CollectionReference collection = firestoreDb.Collection("categories");
-            await collection.AddAsync(newCategory);
+            DocumentReference result = await collection.AddAsync(newCategory);
+            return result.Id;
         }
         public async Task DeleteUser(User user, FirestoreDb firestoreDb)
         {
@@ -67,12 +69,17 @@ namespace ExArbete.Services
             CollectionReference collection = firestoreDb.Collection("categories");
             DocumentReference doc = collection.Document(cat.Id);
             await doc.DeleteAsync();
+            
         }
         public async Task UpdateCategory(Category cat, FirestoreDb firestoreDb)
         {
             CollectionReference collection = firestoreDb.Collection("categories");
             DocumentReference doc = collection.Document(cat.Id);
             await doc.SetAsync(cat);
+        }
+        public void CategoriesChanged()
+        {
+            OnCategoriesChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

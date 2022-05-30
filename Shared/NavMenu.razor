@@ -9,6 +9,8 @@
 @inject IPostService postService
 @inject IUserService userService
 @inject ICategoryService categoryService
+@inject IConfiguration config
+@inject IAdminService adminService
 
 <div id="sidebar" class="flex-column">
     <div class="active-nav @CollapseCssClass" style="margin-top: @activeNavDistanceFromTop"></div>
@@ -17,7 +19,7 @@
 
         <div class="top-row @CollapseCssClass ps-3 navbar navbar-dark">
 
-            <a class="navbar-brand" href="">ExArbete</a>
+            <a class="navbar-brand" href="">@ProjectTitle</a>
             <span class="navbar-toggler-icon oi" @onclick="ToggleNavMenu"></span>
 
 
@@ -80,12 +82,14 @@
 </div>
 
 @code {
+    public string? ProjectTitle { get; set; }
     private bool collapseNavMenu = true;
     private string? CollapseCssClass => collapseNavMenu ? "collapse" : null;
     private bool isLoading = true;
     private string? activeNavDistanceFromTop;
     protected override async Task OnParametersSetAsync()
     {
+        ProjectTitle = config.GetValue<string>("ProjectTitle");
         await categoryService.GetCategories(firestoreDb);
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -93,6 +97,7 @@
         if (firstRender)
         {
             MyNavigationManager.LocationChanged += async (s, e) => await RenderSelectionBulb(s!, e);
+            adminService.OnCategoriesChanged += async (s, e) => await InvokeAsync(() => StateHasChanged());
             MyNavigationManager.NavigateTo("/");
             isLoading = false;
             await InvokeAsync(() => StateHasChanged());
