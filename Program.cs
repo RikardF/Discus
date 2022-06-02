@@ -11,8 +11,6 @@ userService.User = new();
 var cookieExpirationTime = TimeSpan.FromDays(1);
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("ExArbeteIdentityDbContextConnection");
-builder.Services.AddDbContext<ExArbeteIdentityDbContext>(options =>
-    options.UseSqlServer(connectionString)); 
 string firestoreProject = builder.Configuration.GetValue<string>("FirestoreProject");
 string firestoreAuthFile = builder.Configuration.GetValue<string>("FirebaseAuthFile");
 
@@ -51,7 +49,7 @@ builder.Services.AddDbContext<ExArbeteIdentityDbContext>(options =>
 {
     options.UseSqlServer(connectionString);
 });
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ExArbeteIdentityDbContext>();
 builder.Services.AddSingleton<IUserService>(userService);
 builder.Services.AddScoped<IPostService, PostService>();
